@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + 7'li Kategori Grid)</title>
+    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + Sürükle Bırak Sıralama)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -20,6 +20,12 @@
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .category-card:hover .category-img { transform: scale(1.06); }
         
+        /* SÜRÜKLE BIRAK STİLLERİ */
+        .draggable-row { cursor: default; transition: background-color 0.2s; }
+        .draggable-row.dragging { opacity: 0.4; background: #334155 !important; }
+        .drag-handle { cursor: grab; }
+        .drag-handle:active { cursor: grabbing; }
+
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
@@ -106,7 +112,6 @@
         <section id="categories-view">
             <!-- AKORDEON SATIŞÇI PAY DAĞILIMI PANELİ -->
             <div class="glass-card rounded-2xl mb-8 border border-slate-700/80 shadow-xl overflow-hidden">
-                <!-- AKORDEON BAŞLIĞI (Kapalıyken Yatay Çizgi Dağılım Şeridi Gösterir) -->
                 <div onclick="toggleSellerChartAccordion()" class="p-4 sm:p-5 cursor-pointer bg-slate-800/80 hover:bg-slate-800 transition select-none space-y-3">
                     <div class="flex items-center justify-between gap-3">
                         <div class="flex items-center gap-3">
@@ -128,14 +133,12 @@
                         </div>
                     </div>
 
-                    <!-- Kapalı Durumdayken Görünen Boydan Yatay İlerleme Çubuğu -->
                     <div class="space-y-1.5 pt-1">
                         <div id="mini-horizontal-bar" class="w-full h-3 bg-slate-900 rounded-full overflow-hidden flex shadow-inner"></div>
                         <div id="mini-horizontal-legend" class="flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-400 px-1"></div>
                     </div>
                 </div>
 
-                <!-- AKORDEON İÇERİĞİ (Başlangıçta Kapalı / Hidden) -->
                 <div id="seller-chart-body" class="hidden p-6 border-t border-slate-800 bg-slate-900/40 space-y-5">
                     <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
                         <span class="text-xs text-slate-400 font-medium">Satıcıların aktif siparişler içerisindeki ciro ve adet payları:</span>
@@ -153,7 +156,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                        <!-- Sol: Büyük Yuvarlak Grafik (Donut SVG) -->
                         <div class="lg:col-span-5 flex flex-col items-center justify-center relative">
                             <div class="relative w-56 h-56 flex items-center justify-center">
                                 <svg id="seller-donut-svg" viewBox="0 0 36 36" class="w-full h-full -rotate-90 drop-shadow-lg"></svg>
@@ -164,7 +166,6 @@
                             </div>
                         </div>
 
-                        <!-- Sağ: Satıcı Sıralaması ve Yüzdelik Barlar -->
                         <div id="seller-share-list" class="lg:col-span-7 space-y-3"></div>
                     </div>
                 </div>
@@ -200,7 +201,6 @@
                     </div>
                 </div>
 
-                <!-- FİLTRELER: ARAMA, LİMİT VE ZAMAN ARALIĞI -->
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative">
                         <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -253,7 +253,7 @@
                 </div>
             </div>
 
-            <!-- Ürün Ekleme Paneli (Açılır / Kapanır) -->
+            <!-- Ürün Ekleme Paneli -->
             <div id="add-product-card" class="glass-card p-5 rounded-2xl mb-8 hidden border border-amber-500/40 shadow-xl transition-all">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
                     <h3 class="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
@@ -290,12 +290,16 @@
                 </form>
             </div>
 
-            <!-- Ürünler Tablosu -->
+            <!-- Ürünler Tablosu (Sol köşeden tutup sürükleyerek sıralama özellikli) -->
             <div class="glass-card rounded-2xl overflow-hidden">
+                <div class="px-5 py-3 bg-slate-800/80 border-b border-slate-700 text-xs text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-arrows-up-down text-amber-400"></i> Sol köşedeki <i class="fa-solid fa-grip-vertical text-slate-300"></i> tutamaçtan tutup ürünleri yukarı aşağı sürükleyerek sıralayabilirsiniz.
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-800/90 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400">
+                                <th class="py-4 px-3 w-10 text-center"></th>
                                 <th class="py-4 px-5">Ürün Adı</th>
                                 <th class="py-4 px-5 text-center">Mevcut Stok</th>
                                 <th class="py-4 px-5 text-right">Girilen Fiyat</th>
@@ -332,7 +336,6 @@
             </div>
 
             <form onsubmit="submitSpecialSale(event)" class="p-6 overflow-y-auto flex-1 space-y-5">
-                <!-- Kategori & Ürün Seçimi -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5">1. Kategori Seçin <span class="text-rose-500">*</span></label>
@@ -344,7 +347,6 @@
                     </div>
                 </div>
 
-                <!-- Seçilen Ürün Bilgi Kutusu -->
                 <div id="sp-product-info-box" class="bg-slate-800/70 border border-slate-700/80 rounded-xl p-3.5 flex items-center justify-between text-xs hidden">
                     <div>
                         <span class="text-slate-400">Liste Fiyatı:</span>
@@ -356,7 +358,6 @@
                     </div>
                 </div>
 
-                <!-- Özel Fiyat, Döviz & Adet -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-purple-300 mb-1.5">Özel Birim Fiyat <span class="text-rose-500">*</span></label>
@@ -376,7 +377,6 @@
                     </div>
                 </div>
 
-                <!-- ZORUNLU ALAN: ÖZEL FİYAT KİMDEN ALINDI -->
                 <div class="bg-purple-500/10 border border-purple-500/30 p-4 rounded-xl">
                     <label class="block text-xs font-bold text-purple-300 mb-1.5 uppercase tracking-wider">
                         <i class="fa-solid fa-user-check mr-1"></i> Özel Fiyat Kimden Alındı? (Onay Veren) <span class="text-rose-500">*</span>
@@ -384,7 +384,6 @@
                     <input type="text" id="sp-approved-by" required placeholder="Örn: Hasan Bey / Emre Bey / Yönetim Onayı..." class="w-full px-4 py-2.5 bg-slate-900 border border-purple-500/50 rounded-xl text-sm text-white focus:outline-none focus:border-purple-400">
                 </div>
 
-                <!-- Müşteri & Satıcı -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Müşteri İsmi / Firma Adı <span class="text-rose-500">*</span></label>
@@ -396,7 +395,6 @@
                     </div>
                 </div>
 
-                <!-- Teslimat & Ödeme -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Teslimat Şekli</label>
@@ -416,7 +414,6 @@
                     </div>
                 </div>
 
-                <!-- Toplam Tutar Göstergesi -->
                 <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-300 uppercase">Özel Satış Genel Toplamı (TL):</span>
                     <span id="sp-total-tl" class="text-xl font-extrabold text-purple-400">0.00 ₺</span>
@@ -933,16 +930,8 @@
         ];
 
         const chartColors = [
-            '#f59e0b', // Amber
-            '#10b981', // Emerald
-            '#3b82f6', // Blue
-            '#a855f7', // Purple
-            '#f43f5e', // Rose
-            '#06b6d4', // Cyan
-            '#ec4899', // Pink
-            '#84cc16', // Lime
-            '#eab308', // Yellow
-            '#6366f1'  // Indigo
+            '#f59e0b', '#10b981', '#3b82f6', '#a855f7', '#f43f5e', 
+            '#06b6d4', '#ec4899', '#84cc16', '#eab308', '#6366f1'
         ];
 
         let appData = {
@@ -964,8 +953,8 @@
         let activeHistoryOrderIdForPrint = null;
         let currentSecurityAction = null;
         let pendingEditProductId = null;
+        let draggedRowIndex = null;
 
-        // İLK AÇILIŞ ŞİFRE KONTROLÜ
         window.addEventListener('DOMContentLoaded', () => {
             const isAuthorized = localStorage.getItem('hasircilar_authorized');
             if (isAuthorized !== 'true') {
@@ -1027,7 +1016,6 @@
             });
         }
 
-        // AKORDEON AÇMA / KAPANMA
         function toggleSellerChartAccordion() {
             const body = document.getElementById('seller-chart-body');
             const chevron = document.getElementById('accordion-chevron');
@@ -1044,7 +1032,6 @@
             }
         }
 
-        // SATIŞÇI PAY DAĞILIMI (YATAY ÇİZGİ & YUVARLAK GRAFİK) FONKSİYONU
         function renderSellerShareChart() {
             const svg = document.getElementById('seller-donut-svg');
             const miniBar = document.getElementById('mini-horizontal-bar');
@@ -1054,7 +1041,7 @@
             const centerValue = document.getElementById('donut-center-value');
             if (!svg || !miniBar || !miniLegend || !listContainer) return;
 
-            const metric = document.getElementById('seller-chart-metric').value; // 'revenue' veya 'count'
+            const metric = document.getElementById('seller-chart-metric').value;
             const period = parseInt(document.getElementById('seller-chart-period').value) || 0;
             const now = new Date();
 
@@ -1101,7 +1088,6 @@
             miniLegend.innerHTML = '';
             listContainer.innerHTML = '';
 
-            // Arka plan halkası
             const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             bgCircle.setAttribute('cx', '18'); bgCircle.setAttribute('cy', '18'); bgCircle.setAttribute('r', '15.9155');
             bgCircle.setAttribute('fill', 'transparent'); bgCircle.setAttribute('stroke', '#1e293b'); bgCircle.setAttribute('stroke-width', '3.6');
@@ -1124,7 +1110,6 @@
                 const color = chartColors[idx % chartColors.length];
                 const percent = (entry.val / grandTotal) * 100;
 
-                // Büyük Donut Dilimi
                 if (percent > 0) {
                     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                     circle.setAttribute('cx', '18'); circle.setAttribute('cy', '18'); circle.setAttribute('r', '15.9155');
@@ -1134,7 +1119,6 @@
                     svg.appendChild(circle);
                     cumulativePercent += percent;
 
-                    // Kapalıyken Yatay Çizgiye Segment Ekle
                     const seg = document.createElement('div');
                     seg.className = 'h-full transition-all duration-500 hover:opacity-90';
                     seg.style.width = `${percent}%`;
@@ -1143,7 +1127,6 @@
                     miniBar.appendChild(seg);
                 }
 
-                // Yatay Çizgi Altı Lejantı (Lider ve Önemli Satıcılar)
                 if (percent > 0) {
                     const legendItem = document.createElement('div');
                     legendItem.className = 'flex items-center gap-1 font-medium';
@@ -1151,7 +1134,6 @@
                     miniLegend.appendChild(legendItem);
                 }
 
-                // Sağdaki Liste Satırı
                 const rankBadge = idx === 0 && entry.val > 0
                     ? `<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-extrabold border border-amber-500/40"><i class="fa-solid fa-crown mr-1"></i>1. LİDER</span>`
                     : `<span class="text-xs font-bold text-slate-500 w-5">#${idx + 1}</span>`;
@@ -1178,7 +1160,6 @@
             });
         }
 
-        // ŞİFRE KONTROL TETİKLEYİCİLERİ
         function openRateModal() {
             currentSecurityAction = 'update_rates';
             document.getElementById('security-prompt-desc').innerText = 'Döviz kurlarını değiştirmek için şifreyi girin.';
@@ -1223,7 +1204,6 @@
             }
         }
 
-        // ÖZEL FİYATLI SATIŞ FONKSİYONLARI
         function openSpecialSaleModal() {
             const catSelect = document.getElementById('sp-category');
             catSelect.innerHTML = '<option value="">-- Kategori Seçiniz --</option>';
@@ -1329,7 +1309,6 @@
                 return;
             }
 
-            // Stoktan düş
             prod.stock -= qty;
 
             const unitTL = calculateTLPrice(customPrice, currency);
@@ -1571,7 +1550,6 @@
             }
         }
 
-        // TÜM STOĞU YAZDIR FONKSİYONU
         function printAllStockList() {
             const printArea = document.getElementById('print-area');
             const products = appData.products || [];
@@ -1745,6 +1723,7 @@
             return '₺';
         }
 
+        // ÜRÜNLERİ LİSTELEME VE SÜRÜKLE BIRAK (DRAG AND DROP) MANTIĞI
         function renderProducts() {
             const tbody = document.getElementById('products-table-body');
             const emptyMsg = document.getElementById('empty-products-msg');
@@ -1763,7 +1742,7 @@
             }
             emptyMsg.classList.add('hidden');
 
-            filtered.forEach(prod => {
+            filtered.forEach((prod, index) => {
                 const sym = getCurrencySymbol(prod.currency);
                 const tlPrice = calculateTLPrice(prod.price, prod.currency);
                 const kdvTL = tlPrice * 0.20;
@@ -1775,8 +1754,53 @@
                         : `<span class="px-3 py-1 rounded-full bg-rose-500/15 text-rose-400 font-bold text-xs">Tükendi</span>`;
 
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-800/40 transition';
+                tr.className = 'draggable-row hover:bg-slate-800/40 transition';
+                tr.setAttribute('draggable', searchTerm === ''); // Sadece arama yapılmadığında serbest sürüklenebilir
+                tr.setAttribute('data-id', prod.id);
+
+                tr.addEventListener('dragstart', (e) => {
+                    draggedRowIndex = index;
+                    tr.classList.add('dragging');
+                });
+
+                tr.addEventListener('dragend', () => {
+                    tr.classList.remove('dragging');
+                });
+
+                tr.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+
+                tr.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (searchTerm !== '') return; // Arama filtresi açıkken sıralama yapılmasın
+
+                    const targetIndex = index;
+                    if (draggedRowIndex === null || draggedRowIndex === targetIndex) return;
+
+                    // Global listede kategoriye ait ürünlerin indislerini bul ve yer değiştir
+                    const allProducts = appData.products;
+                    const catProducts = allProducts.filter(p => p.categoryId === activeCategoryId);
+                    
+                    const movedItem = catProducts[draggedRowIndex];
+                    catProducts.splice(draggedRowIndex, 1);
+                    catProducts.splice(targetIndex, 0, movedItem);
+
+                    // Diğer kategorilerdeki ürünleri bozmadan güncel sıralamayı appData.products'a işle
+                    const otherProducts = allProducts.filter(p => p.categoryId !== activeCategoryId);
+                    appData.products = [...otherProducts, ...catProducts];
+
+                    saveData();
+                    renderProducts();
+                    showToast('Ürün sıralaması güncellendi!');
+                });
+
                 tr.innerHTML = `
+                    <td class="py-4 px-3 text-center">
+                        <div class="drag-handle text-slate-500 hover:text-amber-400 cursor-grab active:cursor-grabbing p-1" title="Tut ve Sürükle">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </div>
+                    </td>
                     <td class="py-4 px-5 font-semibold text-white">${prod.name}</td>
                     <td class="py-4 px-5 text-center">
                         <div class="inline-flex items-center gap-2 justify-center">
