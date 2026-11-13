@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otomasyon Stok & Satış Yönetim Sistemi</title>
+    <title>Otomasyon Stok & Satış Yönetim Sistemi (Cloud Sync)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Klasik Firebase SDK (file:// üzerinden çift tıklamayla %100 çalışır) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -24,24 +28,20 @@
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3 cursor-pointer" onclick="showCategoriesView()">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-                    <i class="fa-solid fa-gears text-white text-xl"></i>
+                    <i class="fa-solid fa-cloud-arrow-up text-white text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white">STOK & SATIŞ <span class="text-amber-500">PRO</span></h1>
-                    <p class="text-xs text-slate-400">Otomasyon & Kapı Sistemleri Yönetimi</p>
+                    <h1 class="text-xl font-bold tracking-tight text-white">STOK & SATIŞ <span class="text-amber-500">CLOUD</span></h1>
+                    <p id="sync-status" class="text-xs text-emerald-400 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Bulut Bağlantısı Hazır
+                    </p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <div class="hidden md:flex items-center gap-2 mr-2 border-r border-slate-700 pr-4">
-                    <button onclick="exportData()" title="Verileri Yedekle" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition flex items-center gap-1.5 border border-slate-700">
-                        <i class="fa-solid fa-download text-emerald-400"></i> Yedekle
-                    </button>
-                    <label title="Yedekten Geri Yükle" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition flex items-center gap-1.5 border border-slate-700 cursor-pointer">
-                        <i class="fa-solid fa-upload text-sky-400"></i> Yükle
-                        <input type="file" accept=".json" onchange="importData(event)" class="hidden">
-                    </label>
-                </div>
+                <button onclick="exportData()" title="Yedek İndir" class="hidden sm:flex px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition items-center gap-1.5 border border-slate-700">
+                    <i class="fa-solid fa-download text-emerald-400"></i> Yedekle
+                </button>
 
                 <button onclick="openOrdersModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition flex items-center gap-2 border border-slate-700">
                     <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>
@@ -60,25 +60,24 @@
 
     <!-- ANA İÇERİK -->
     <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-8">
-
-        <!-- KATEGORİLER (5 SÜTUNLU KUTULAR) -->
+        <!-- KATEGORİLER GÖRÜNÜMÜ -->
         <section id="categories-view">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 class="text-2xl font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-layer-group text-amber-500"></i> Ürün Kategorileri
                     </h2>
-                    <p class="text-sm text-slate-400 mt-1">Ürün eklemek veya stokları görmek için bir kategori kutusuna tıklayın.</p>
+                    <p class="text-sm text-slate-400 mt-1">Tüm cihazlarla anlık senkronize stok yönetimi.</p>
                 </div>
                 <button onclick="openAddCategoryModal()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Yeni Başlık Ekle
+                    <i class="fa-solid fa-plus"></i> Yeni Başlık (Kategori) Ekle
                 </button>
             </div>
-
+            <!-- Her satırda 5 kutu -->
             <div id="categories-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5"></div>
         </section>
 
-        <!-- ÜRÜNLER LİSTESİ -->
+        <!-- ÜRÜNLER GÖRÜNÜMÜ -->
         <section id="products-view" class="hidden">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-slate-800/60 p-5 rounded-2xl border border-slate-700/80">
                 <div class="flex items-center gap-4">
@@ -286,8 +285,25 @@
 
     <input type="file" id="hidden-cat-image-input" accept="image/*" class="hidden" onchange="handleCategoryImageChange(event)">
 
-    <!-- UYGULAMA MANTIĞI -->
+    <!-- UYGULAMA MANTIĞI (KLASİK SCRIPT) -->
     <script>
+        // Firebase Yapılandırması
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgTLVv4K6DTjfNDudDDXkfA-bS7gxR4Ik",
+            authDomain: "genel-fiyat-listesi.firebaseapp.com",
+            databaseURL: "https://genel-fiyat-listesi-default-rtdb.firebaseio.com",
+            projectId: "genel-fiyat-listesi",
+            storageBucket: "genel-fiyat-listesi.firebasestorage.app",
+            messagingSenderId: "671079709555",
+            appId: "1:671079709555:web:049c532e3d759517e02306",
+            measurementId: "G-T9ZBW0VZFW"
+        };
+
+        // Firebase Başlat
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const dbRef = db.ref('stokVerileri');
+
         const defaultCategories = [
             { id: 'cat_1', name: 'TÜP MOTORLAR', image: '' },
             { id: 'cat_2', name: 'ZİNCİRLİ MOTORLAR', image: '' },
@@ -310,20 +326,61 @@
             'HASAN BEY'
         ];
 
-        let appData = JSON.parse(localStorage.getItem('otomasyonStokPro_v1')) || {
+        let appData = {
             categories: defaultCategories,
             products: [],
             sellers: defaultSellers,
             orders: []
         };
-
         let cart = [];
         let activeCategoryId = null;
         let uploadingCategoryId = null;
 
-        function saveData() {
-            localStorage.setItem('otomasyonStokPro_v1', JSON.stringify(appData));
+        // İlk açılışta ekranı hemen çiz (boş kalmasını engelle)
+        renderCategories();
+        updateBadges();
+
+        // Firebase'den verileri anlık dinle (Realtime Sync)
+        dbRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            const statusEl = document.getElementById('sync-status');
+            
+            if (data && data.categories) {
+                appData = data;
+                if (!appData.sellers) appData.sellers = defaultSellers;
+                if (!appData.orders) appData.orders = [];
+                if (!appData.products) appData.products = [];
+            } else {
+                // Firebase ilk kez boşsa varsayılanları kaydet
+                dbRef.set(appData);
+            }
+
+            if (statusEl) {
+                statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Canlı Bulut Bağlantısı Aktif`;
+            }
+
+            if (activeCategoryId) {
+                renderProducts();
+            } else {
+                renderCategories();
+            }
             updateBadges();
+        }, (error) => {
+            console.error("Firebase hatası:", error);
+            const statusEl = document.getElementById('sync-status');
+            if (statusEl) {
+                statusEl.className = "text-xs text-rose-400 flex items-center gap-1.5";
+                statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span> Bağlantı Hatası (İzinleri Kontrol Edin)`;
+            }
+        });
+
+        function saveData() {
+            dbRef.set(appData).then(() => {
+                updateBadges();
+            }).catch((err) => {
+                console.error(err);
+                showToast('Buluta kayıt hatası! Firebase kurallarını kontrol edin.', 'error');
+            });
         }
 
         function showToast(msg, type = 'success') {
@@ -338,7 +395,7 @@
         function updateBadges() {
             const totalCartItems = cart.reduce((sum, item) => sum + item.qty, 0);
             document.getElementById('cart-badge').innerText = totalCartItems;
-            document.getElementById('orders-badge').innerText = appData.orders.length;
+            document.getElementById('orders-badge').innerText = (appData.orders || []).length;
         }
 
         function renderCategories() {
@@ -346,8 +403,9 @@
             if(!grid) return;
             grid.innerHTML = '';
 
-            appData.categories.forEach((cat, index) => {
-                const productCount = appData.products.filter(p => p.categoryId === cat.id).length;
+            (appData.categories || []).forEach((cat, index) => {
+                const products = appData.products || [];
+                const productCount = products.filter(p => p.categoryId === cat.id).length;
                 
                 const imageHTML = cat.image 
                     ? `<img src="${cat.image}" alt="${cat.name}" class="category-img w-full h-full object-cover transition-transform duration-500">`
@@ -393,8 +451,7 @@
                 if (cat) {
                     cat.image = base64Img;
                     saveData();
-                    renderCategories();
-                    showToast('Görsel güncellendi!');
+                    showToast('Görsel tüm cihazlarda güncellendi!');
                 }
                 event.target.value = '';
             });
@@ -436,13 +493,13 @@
             if (!nameInput) return;
 
             const finalize = (imgData) => {
+                if(!appData.categories) appData.categories = [];
                 appData.categories.push({
                     id: 'cat_' + Date.now(),
                     name: nameInput,
                     image: imgData || ''
                 });
                 saveData();
-                renderCategories();
                 closeModal('add-category-modal');
                 showToast(`"${nameInput}" kategorisi eklendi.`);
             };
@@ -477,6 +534,7 @@
             const price = parseFloat(document.getElementById('prod-price').value);
             const currency = document.getElementById('prod-currency').value;
 
+            if(!appData.products) appData.products = [];
             appData.products.push({
                 id: 'prod_' + Date.now(),
                 categoryId: activeCategoryId,
@@ -484,10 +542,9 @@
             });
 
             saveData();
-            renderProducts();
             document.getElementById('prod-name').value = '';
             document.getElementById('prod-price').value = '';
-            showToast('Ürün eklendi.');
+            showToast('Ürün buluta eklendi.');
         }
 
         function getCurrencySymbol(curr) {
@@ -500,8 +557,9 @@
             const tbody = document.getElementById('products-table-body');
             const emptyMsg = document.getElementById('empty-products-msg');
             const searchTerm = document.getElementById('product-search').value.toLowerCase();
+            const products = appData.products || [];
 
-            const filtered = appData.products.filter(p => 
+            const filtered = products.filter(p => 
                 p.categoryId === activeCategoryId && 
                 p.name.toLowerCase().includes(searchTerm)
             );
@@ -552,14 +610,12 @@
             if (!prod || prod.stock + delta < 0) return;
             prod.stock += delta;
             saveData();
-            renderProducts();
         }
 
         function deleteProduct(prodId) {
             if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) return;
             appData.products = appData.products.filter(p => p.id !== prodId);
             saveData();
-            renderProducts();
             showToast('Ürün silindi.');
         }
 
@@ -593,7 +649,7 @@
             const select = document.getElementById('order-seller');
             const currentVal = select.value;
             select.innerHTML = '<option value="">-- Satıcı Seçiniz --</option>';
-            appData.sellers.forEach(seller => {
+            (appData.sellers || []).forEach(seller => {
                 const opt = document.createElement('option');
                 opt.value = seller;
                 opt.innerText = seller;
@@ -606,6 +662,7 @@
             const newName = prompt('Yeni Satıcı Adı Soyadı:');
             if (!newName || !newName.trim()) return;
             const formatted = newName.trim().toUpperCase();
+            if(!appData.sellers) appData.sellers = [];
             if (!appData.sellers.includes(formatted)) {
                 appData.sellers.push(formatted);
                 saveData();
@@ -718,25 +775,26 @@
                 items: [...cart]
             };
 
+            if(!appData.orders) appData.orders = [];
             appData.orders.unshift(newOrder);
             cart = [];
             saveData();
 
             document.getElementById('order-customer').value = '';
             closeModal('cart-modal');
-            if (activeCategoryId) renderProducts();
-            else renderCategories();
-            showToast('Satış tamamlandı!');
+            showToast('Satış tamamlandı ve tüm cihazlara işlendi!');
         }
 
         function openOrdersModal() {
             const container = document.getElementById('orders-list-container');
             container.innerHTML = '';
-            if (appData.orders.length === 0) {
+            const orders = appData.orders || [];
+
+            if (orders.length === 0) {
                 container.innerHTML = `<div class="text-center py-12 text-slate-500">Henüz satış bulunmuyor.</div>`;
             } else {
-                appData.orders.forEach(order => {
-                    const itemsHTML = order.items.map(i => 
+                orders.forEach(order => {
+                    const itemsHTML = (order.items || []).map(i => 
                         `<li class="flex justify-between text-xs text-slate-300 py-1 border-b border-slate-800 last:border-0">
                             <span>${i.qty}x ${i.name}</span>
                             <span class="font-semibold text-amber-400">${(i.price * i.qty).toLocaleString('tr-TR', {minimumFractionDigits: 2})} ${getCurrencySymbol(i.currency)}</span>
@@ -776,36 +834,12 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `stok_yedek_${new Date().toISOString().slice(0,10)}.json`);
+            downloadAnchor.setAttribute("download", `cloud_stok_yedek_${new Date().toISOString().slice(0,10)}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
             showToast('Yedek indirildi.');
         }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (imported.categories) {
-                        appData = imported;
-                        saveData();
-                        renderCategories();
-                        showToast('Yedek yüklendi!');
-                    }
-                } catch (err) {
-                    showToast('Hatalı dosya!', 'error');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // İlk Çalıştırma
-        renderCategories();
-        updateBadges();
     </script>
 </body>
 </html>
