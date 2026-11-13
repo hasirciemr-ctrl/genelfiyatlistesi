@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + KDV)</title>
+    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + Ürün Düzenleme)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -238,6 +238,57 @@
             </div>
         </section>
     </main>
+
+    <!-- MODAL: ÜRÜN DÜZENLEME PENCERESİ -->
+    <div id="edit-product-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                        <i class="fa-solid fa-pen-to-square text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Ürünü Düzenle</h3>
+                        <p class="text-xs text-slate-400">İsim, stok, fiyat ve para birimi güncelleyin</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('edit-product-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <form onsubmit="saveEditedProduct(event)" class="space-y-4">
+                <input type="hidden" id="edit-prod-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Ürün Adı / Modeli *</label>
+                    <input type="text" id="edit-prod-name" required class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Stok Adedi *</label>
+                        <input type="number" id="edit-prod-stock" required min="0" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white text-center focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Para Birimi</label>
+                        <select id="edit-prod-currency" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white font-semibold focus:outline-none focus:border-amber-500">
+                            <option value="TL">₺ Türk Lirası</option>
+                            <option value="USD">$ Dolar (USD)</option>
+                            <option value="EUR">€ Euro (EUR)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Birim Fiyat *</label>
+                    <input type="number" id="edit-prod-price" required min="0" step="0.01" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('edit-product-modal')" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold">İptal</button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-bold shadow-lg">Değişiklikleri Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL: İLK AÇILIŞ ŞİFRESİ -->
     <div id="first-login-modal" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
@@ -706,6 +757,7 @@
         let lastCreatedOrder = null;
         let activeHistoryOrderIdForPrint = null;
         let currentSecurityAction = null;
+        let pendingEditProductId = null; // Ürün düzenleme için geçici tutucu
 
         // İLK AÇILIŞ ŞİFRE KONTROLÜ
         window.addEventListener('DOMContentLoaded', () => {
@@ -795,6 +847,8 @@
                     document.getElementById('price-edit-box').classList.remove('hidden');
                     document.getElementById('new-custom-price').value = selectedProductForCart.price;
                     showToast('Yetki onaylandı, yeni fiyatı girebilirsiniz.');
+                } else if (currentSecurityAction === 'edit_product_auth') {
+                    openEditProductModalConfirmed(pendingEditProductId);
                 }
             } else {
                 showToast('Hatalı şifre!', 'error');
@@ -972,7 +1026,6 @@
             if (!cat) return;
             document.getElementById('current-category-title').innerText = cat.name;
             document.getElementById('product-search').value = '';
-            // Kategoriye girildiğinde ürün ekleme formunu kapalı tut
             document.getElementById('add-product-card').classList.add('hidden');
             document.getElementById('categories-view').classList.add('hidden');
             document.getElementById('best-sellers-view').classList.add('hidden');
@@ -996,7 +1049,6 @@
             renderBestSellers();
         }
 
-        // Ürün Ekleme Panelini Aç/Kapat
         function toggleAddProductCard() {
             const card = document.getElementById('add-product-card');
             if (card.classList.contains('hidden')) {
@@ -1087,7 +1139,6 @@
             saveData();
             document.getElementById('prod-name').value = '';
             document.getElementById('prod-price').value = '';
-            // Ürün eklendikten sonra formu otomatik kapat
             document.getElementById('add-product-card').classList.add('hidden');
             showToast('Ürün buluta eklendi.');
         }
@@ -1152,12 +1203,56 @@
                             <button onclick="openAddToCartModal('${prod.id}')" ${prod.stock <= 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md">
                                 <i class="fa-solid fa-cart-plus"></i> Sepete Ekle
                             </button>
-                            <button onclick="deleteProduct('${prod.id}')" class="p-2 text-slate-500 hover:text-rose-500 transition"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="openEditProductModal('${prod.id}')" title="Ürünü Düzenle" class="p-2 text-slate-400 hover:text-amber-400 transition bg-slate-800 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteProduct('${prod.id}')" title="Ürünü Sil" class="p-2 text-slate-500 hover:text-rose-500 transition bg-slate-800 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function openEditProductModal(prodId) {
+            pendingEditProductId = prodId;
+            currentSecurityAction = 'edit_product_auth';
+            document.getElementById('security-prompt-desc').innerText = 'Ürün detaylarını (fiyat/stok/isim) değiştirmek için şifreyi girin.';
+            document.getElementById('security-pass-input').value = '';
+            document.getElementById('security-prompt-modal').classList.remove('hidden');
+        }
+
+        function openEditProductModalConfirmed(prodId) {
+            const prod = (appData.products || []).find(p => p.id === prodId);
+            if (!prod) return;
+
+            document.getElementById('edit-prod-id').value = prod.id;
+            document.getElementById('edit-prod-name').value = prod.name;
+            document.getElementById('edit-prod-stock').value = prod.stock;
+            document.getElementById('edit-prod-price').value = prod.price;
+            document.getElementById('edit-prod-currency').value = prod.currency || 'TL';
+
+            document.getElementById('edit-product-modal').classList.remove('hidden');
+        }
+
+        function saveEditedProduct(e) {
+            e.preventDefault();
+            const prodId = document.getElementById('edit-prod-id').value;
+            const name = document.getElementById('edit-prod-name').value.trim();
+            const stock = parseInt(document.getElementById('edit-prod-stock').value);
+            const price = parseFloat(document.getElementById('edit-prod-price').value);
+            const currency = document.getElementById('edit-prod-currency').value;
+
+            const prod = (appData.products || []).find(p => p.id === prodId);
+            if (prod) {
+                prod.name = name;
+                prod.stock = isNaN(stock) ? 0 : stock;
+                prod.price = isNaN(price) ? 0 : price;
+                prod.currency = currency;
+
+                saveData();
+                closeModal('edit-product-modal');
+                showToast('Ürün başarıyla güncellendi!');
+                renderProducts();
+            }
         }
 
         function updateStock(prodId, delta) {
