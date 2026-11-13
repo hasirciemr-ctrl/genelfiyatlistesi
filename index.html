@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + İnce Performans Paneli)</title>
+    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + 9'lu Kategori Grid)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -134,7 +134,7 @@
                     </div>
                 </div>
 
-                <!-- AKORDEON İÇERİĞİ (Başlangıçta Kapalı / Kompakt Grid) -->
+                <!-- AKORDEON İÇERİĞİ -->
                 <div id="seller-chart-body" class="hidden p-4 border-t border-slate-800 bg-slate-900/50 space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-800">
                         <span class="text-[11px] text-slate-400 font-medium">Satıcıların aktif siparişler içerisindeki ciro ve adet payları:</span>
@@ -152,7 +152,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                        <!-- Sol: Küçültülmüş Donut Grafik -->
                         <div class="lg:col-span-3 flex flex-col items-center justify-center relative bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
                             <div class="relative w-36 h-36 flex items-center justify-center">
                                 <svg id="seller-donut-svg" viewBox="0 0 36 36" class="w-full h-full -rotate-90 drop-shadow"></svg>
@@ -163,13 +162,12 @@
                             </div>
                         </div>
 
-                        <!-- Sağ: Satıcı Liste Grid'i (2 Sütunlu Kompakt Yapı) -->
                         <div id="seller-share-list" class="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- ÜRÜN KATEGORİLERİ BAŞLIK & GRID (HER SATIRDA 7 ADET) -->
+            <!-- ÜRÜN KATEGORİLERİ BAŞLIK & GRID (HER SATIRDA 9 ADET) -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-white flex items-center gap-2">
@@ -181,7 +179,8 @@
                     <i class="fa-solid fa-plus"></i> Yeni Başlık (Kategori) Ekle
                 </button>
             </div>
-            <div id="categories-grid" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4"></div>
+            <!-- Her satırda 9 adet kategori grid yapısı -->
+            <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3.5"></div>
         </section>
 
         <!-- EN ÇOK SATILANLAR GÖRÜNÜMÜ -->
@@ -1398,26 +1397,26 @@
                 const imageHTML = cat.image 
                     ? `<img src="${cat.image}" alt="${cat.name}" class="category-img w-full h-full object-cover transition-transform duration-500">`
                     : `<div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center text-slate-600 group-hover:text-amber-500/80 transition">
-                           <i class="fa-solid fa-microchip text-3xl mb-1.5"></i>
-                           <span class="text-[9px] uppercase tracking-widest text-slate-500">Görsel Yok</span>
+                           <i class="fa-solid fa-microchip text-2xl mb-1"></i>
+                           <span class="text-[8px] uppercase tracking-widest text-slate-500">Görsel Yok</span>
                        </div>`;
 
                 const card = document.createElement('div');
-                card.className = 'category-card group relative bg-slate-800/80 border border-slate-700/80 hover:border-amber-500/70 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-1';
+                card.className = 'category-card group relative bg-slate-800/80 border border-slate-700/80 hover:border-amber-500/70 rounded-xl overflow-hidden shadow-md transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-1';
                 card.innerHTML = `
-                    <div class="relative h-28 w-full overflow-hidden bg-slate-900" onclick="openCategory('${cat.id}')">
+                    <div class="relative h-24 w-full overflow-hidden bg-slate-900" onclick="openCategory('${cat.id}')">
                         ${imageHTML}
                         <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80"></div>
-                        <span class="absolute top-2 left-2 bg-slate-900/80 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md border border-slate-700">#${index + 1}</span>
+                        <span class="absolute top-1.5 left-1.5 bg-slate-900/80 text-amber-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-700">#${index + 1}</span>
                     </div>
-                    <button onclick="triggerImageUpload(event, '${cat.id}')" title="Görsel Seç" class="absolute top-2 right-2 w-7 h-7 rounded-lg bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-900 border border-slate-700 flex items-center justify-center transition shadow-md z-10">
-                        <i class="fa-solid fa-camera text-[10px]"></i>
+                    <button onclick="triggerImageUpload(event, '${cat.id}')" title="Görsel Seç" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-900 border border-slate-700 flex items-center justify-center transition shadow-md z-10">
+                        <i class="fa-solid fa-camera text-[9px]"></i>
                     </button>
-                    <div class="p-3 flex-1 flex flex-col justify-between" onclick="openCategory('${cat.id}')">
-                        <h3 class="font-bold text-xs text-white group-hover:text-amber-400 transition leading-snug line-clamp-2">${cat.name}</h3>
-                        <div class="mt-2 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
+                    <div class="p-2.5 flex-1 flex flex-col justify-between" onclick="openCategory('${cat.id}')">
+                        <h3 class="font-bold text-[11px] text-white group-hover:text-amber-400 transition leading-snug line-clamp-2">${cat.name}</h3>
+                        <div class="mt-1.5 pt-1.5 border-t border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
                             <span>${productCount} Ürün</span>
-                            <span class="text-amber-500 font-medium">Aç <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
+                            <span class="text-amber-500 font-medium">Aç <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
                         </div>
                     </div>
                 `;
