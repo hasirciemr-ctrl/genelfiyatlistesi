@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + 9'lu Kategori Grid)</title>
+    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + Çoklu Ürün & Özel Satış Butonu)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -61,10 +61,10 @@
                 </div>
             </div>
 
-            <!-- ORTA KISIM: ÖZEL FİYATLI SATIŞ + EN ÇOK SATILANLAR + DÖVİZ KURLARI -->
+            <!-- ORTA KISIM: TOPLU ÖZEL FİYATLI SATIŞ + EN ÇOK SATILANLAR + DÖVİZ KURLARI -->
             <div class="flex items-center gap-3">
                 <button onclick="openSpecialSaleModal()" class="px-4 py-2 bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/40 border border-purple-500/50 rounded-2xl text-purple-300 font-bold text-xs flex items-center gap-2 transition shadow-inner">
-                    <i class="fa-solid fa-tag text-purple-400"></i> Özel Fiyatlı Satış
+                    <i class="fa-solid fa-tags text-purple-400"></i> Çoklu Özel Fiyatlı Satış
                 </button>
 
                 <button onclick="openBestSellersView()" class="px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 border border-amber-500/40 rounded-2xl text-amber-400 font-bold text-xs flex items-center gap-2 transition shadow-inner">
@@ -112,7 +112,6 @@
         <section id="categories-view">
             <!-- İNCELTİLMİŞ VE KOMPAKT SATIŞÇI PERFORMANS PANELİ -->
             <div class="glass-card rounded-xl mb-6 border border-slate-700/80 shadow-md overflow-hidden">
-                <!-- AKORDEON BAŞLIĞI (İnce Şerit) -->
                 <div onclick="toggleSellerChartAccordion()" class="py-2.5 px-4 cursor-pointer bg-slate-800/80 hover:bg-slate-800 transition select-none flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
                         <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
@@ -124,7 +123,6 @@
                         </div>
                     </div>
                     
-                    <!-- Sağ Taraf: Mini Çubuk ve Açma Butonu -->
                     <div class="flex items-center gap-3">
                         <div class="hidden sm:flex items-center w-36 h-2 bg-slate-900 rounded-full overflow-hidden shadow-inner" id="header-mini-bar" title="Genel Dağılım"></div>
                         <span id="accordion-toggle-text" class="text-[11px] font-semibold text-amber-400">Paneli Aç</span>
@@ -134,7 +132,6 @@
                     </div>
                 </div>
 
-                <!-- AKORDEON İÇERİĞİ -->
                 <div id="seller-chart-body" class="hidden p-4 border-t border-slate-800 bg-slate-900/50 space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-800">
                         <span class="text-[11px] text-slate-400 font-medium">Satıcıların aktif siparişler içerisindeki ciro ve adet payları:</span>
@@ -167,7 +164,7 @@
                 </div>
             </div>
 
-            <!-- ÜRÜN KATEGORİLERİ BAŞLIK & GRID (HER SATIRDA 9 ADET) -->
+            <!-- ÜRÜN KATEGORİLERİ BAŞLIK & GRID (9'LU) -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-white flex items-center gap-2">
@@ -179,7 +176,6 @@
                     <i class="fa-solid fa-plus"></i> Yeni Başlık (Kategori) Ekle
                 </button>
             </div>
-            <!-- Her satırda 9 adet kategori grid yapısı -->
             <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3.5"></div>
         </section>
 
@@ -201,7 +197,7 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative">
                         <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" id="best-product-search" oninput="renderBestSellers()" placeholder="Ürün ara (Örn: 60 NM)..." class="pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 w-52">
+                        <input type="text" id="best-product-search" oninput="renderBestSellers()" placeholder="Ürün ara..." class="pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 w-52">
                     </div>
                     <div>
                         <select id="best-limit-select" onchange="renderBestSellers()" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-amber-400 font-bold focus:outline-none focus:border-amber-500">
@@ -287,10 +283,11 @@
                 </form>
             </div>
 
-            <!-- Ürünler Tablosu -->
+            <!-- Ürünler Tablosu (Stok değiştirme butonları kaldırıldı, salt okunur güncel stok ve her ürünün yanında özel fiyat butonu eklendi) -->
             <div class="glass-card rounded-2xl overflow-hidden">
-                <div class="px-5 py-3 bg-slate-800/80 border-b border-slate-700 text-xs text-slate-400 flex items-center gap-2">
-                    <i class="fa-solid fa-arrows-up-down text-amber-400"></i> Sol köşedeki <i class="fa-solid fa-grip-vertical text-slate-300"></i> tutamaçtan tutup ürünleri yukarı aşağı sürükleyerek sıralayabilirsiniz.
+                <div class="px-5 py-3 bg-slate-800/80 border-b border-slate-700 text-xs text-slate-400 flex items-center justify-between">
+                    <span><i class="fa-solid fa-arrows-up-down text-amber-400 mr-1.5"></i> Sol köşedeki tutamaçtan tutup ürünleri yukarı aşağı sürükleyerek sıralayabilirsiniz.</span>
+                    <span class="text-amber-400 font-semibold">Not: Stok adetleri salt okunurdur.</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -298,7 +295,7 @@
                             <tr class="bg-slate-800/90 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400">
                                 <th class="py-4 px-3 w-10 text-center"></th>
                                 <th class="py-4 px-5">Ürün Adı</th>
-                                <th class="py-4 px-5 text-center">Mevcut Stok</th>
+                                <th class="py-4 px-5 text-center">Güncel Stok</th>
                                 <th class="py-4 px-5 text-right">Girilen Fiyat</th>
                                 <th class="py-4 px-5 text-right">KDV (%20)</th>
                                 <th class="py-4 px-5 text-right">SATIŞ FİYATI</th>
@@ -316,113 +313,119 @@
         </section>
     </main>
 
-    <!-- MODAL: ÖZEL FİYATLI SATIŞ PENCERESİ -->
+    <!-- MODAL: ÇOKLU ÖZEL FİYATLI SATIŞ PENCERESİ -->
     <div id="special-sale-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-purple-500/50 rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl">
+        <div class="bg-slate-900 border border-purple-500/50 rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl">
             <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-gradient-to-r from-purple-900/30 to-slate-900 rounded-t-2xl">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
-                        <i class="fa-solid fa-tag text-lg"></i>
+                        <i class="fa-solid fa-tags text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-white">Özel Fiyatlı Satış Oluştur</h3>
-                        <p class="text-xs text-purple-300">İskontolu veya özel anlaşmalı fiyatla doğrudan satış yapın.</p>
+                        <h3 class="text-xl font-bold text-white">Çoklu Özel Fiyatlı Satış Oluştur</h3>
+                        <p class="text-xs text-purple-300">Bu satışa birden fazla farklı ürün ekleyebilir, her birine özel fiyat tanımlayabilirsiniz.</p>
                     </div>
                 </div>
                 <button onclick="closeModal('special-sale-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
             </div>
 
-            <form onsubmit="submitSpecialSale(event)" class="p-6 overflow-y-auto flex-1 space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">1. Kategori Seçin <span class="text-rose-500">*</span></label>
-                        <select id="sp-category" onchange="loadSpecialSaleProducts()" required class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500"></select>
+            <div class="p-6 overflow-y-auto flex-1 space-y-5">
+                <!-- Ürün Ekleme Satırı -->
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-purple-500/30 space-y-3">
+                    <h4 class="text-xs font-bold text-purple-300 uppercase tracking-wider"><i class="fa-solid fa-circle-plus mr-1"></i> Satışa Ürün Ekle</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                        <div class="sm:col-span-4">
+                            <label class="block text-[11px] text-slate-400 mb-1">Kategori</label>
+                            <select id="sp-modal-cat" onchange="loadSpecialModalProducts()" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div class="sm:col-span-4">
+                            <label class="block text-[11px] text-slate-400 mb-1">Ürün</label>
+                            <select id="sp-modal-prod" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-[11px] text-purple-300 mb-1">Özel Birim Fiyat</label>
+                            <input type="number" id="sp-modal-price" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 bg-slate-900 border border-purple-500/50 rounded-xl text-xs font-bold text-white focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-1">
+                            <label class="block text-[11px] text-slate-400 mb-1">Birim</label>
+                            <select id="sp-modal-curr" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-semibold">
+                                <option value="TL">₺</option>
+                                <option value="USD">$</option>
+                                <option value="EUR">€</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-1">
+                            <label class="block text-[11px] text-slate-400 mb-1">Adet</label>
+                            <input type="number" id="sp-modal-qty" value="1" min="1" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-white text-center">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">2. Ürün Seçin <span class="text-rose-500">*</span></label>
-                        <select id="sp-product" onchange="updateSpecialSaleProductInfo()" required class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500"></select>
-                    </div>
-                </div>
-
-                <div id="sp-product-info-box" class="bg-slate-800/70 border border-slate-700/80 rounded-xl p-3.5 flex items-center justify-between text-xs hidden">
-                    <div>
-                        <span class="text-slate-400">Liste Fiyatı:</span>
-                        <span id="sp-normal-price" class="font-bold text-slate-200 ml-1">0.00</span>
-                    </div>
-                    <div>
-                        <span class="text-slate-400">Mevcut Stok:</span>
-                        <span id="sp-available-stock" class="font-bold text-emerald-400 ml-1">0 Adet</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-purple-300 mb-1.5">Özel Birim Fiyat <span class="text-rose-500">*</span></label>
-                        <input type="number" id="sp-custom-price" step="0.01" min="0" required oninput="calculateSpecialSaleTotal()" placeholder="0.00" class="w-full px-4 py-2.5 bg-slate-800 border border-purple-500/50 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-purple-400">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Para Birimi</label>
-                        <select id="sp-currency" onchange="calculateSpecialSaleTotal()" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white font-semibold focus:outline-none focus:border-purple-500">
-                            <option value="TL">₺ Türk Lirası</option>
-                            <option value="USD">$ Dolar (USD)</option>
-                            <option value="EUR">€ Euro (EUR)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Satış Adedi <span class="text-rose-500">*</span></label>
-                        <input type="number" id="sp-qty" value="1" min="1" required oninput="calculateSpecialSaleTotal()" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-bold text-white text-center focus:outline-none focus:border-purple-500">
+                    <div class="flex justify-end pt-1">
+                        <button type="button" onclick="addSpecialSaleItemToList()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Listeye Ekle
+                        </button>
                     </div>
                 </div>
 
-                <div class="bg-purple-500/10 border border-purple-500/30 p-4 rounded-xl">
-                    <label class="block text-xs font-bold text-purple-300 mb-1.5 uppercase tracking-wider">
-                        <i class="fa-solid fa-user-check mr-1"></i> Özel Fiyat Kimden Alındı? (Onay Veren) <span class="text-rose-500">*</span>
-                    </label>
-                    <input type="text" id="sp-approved-by" required placeholder="Örn: Hasan Bey / Emre Bey / Yönetim Onayı..." class="w-full px-4 py-2.5 bg-slate-900 border border-purple-500/50 rounded-xl text-sm text-white focus:outline-none focus:border-purple-400">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Müşteri İsmi / Firma Adı <span class="text-rose-500">*</span></label>
-                        <input type="text" id="sp-customer" required placeholder="Müşteri adını yazın..." class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Satıcı Seçimi <span class="text-rose-500">*</span></label>
-                        <select id="sp-seller" required class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500"></select>
+                <!-- Eklenen Ürünler Listesi -->
+                <div>
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Bu Satışa Eklenen Ürünler (<span id="sp-items-count">0</span> Ürün)</h4>
+                    <div id="special-sale-items-container" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        <div class="text-center py-6 text-slate-500 text-xs bg-slate-800/40 rounded-xl">Henüz ürün eklenmedi. Yukarıdan ürün seçip ekleyin.</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Teslimat Şekli</label>
-                        <select id="sp-delivery" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500">
-                            <option value="Kargo">Kargo</option>
-                            <option value="Elden Teslim">Elden Teslim</option>
-                            <option value="Nakliye">Nakliye</option>
-                        </select>
+                <!-- Genel Detaylar Formu -->
+                <form onsubmit="submitSpecialSale(event)" class="space-y-4 pt-3 border-t border-slate-800">
+                    <div class="bg-purple-500/10 border border-purple-500/30 p-3.5 rounded-xl">
+                        <label class="block text-xs font-bold text-purple-300 mb-1 uppercase tracking-wider">
+                            <i class="fa-solid fa-user-check mr-1"></i> Özel Fiyat Kimden Alındı? (Onay Veren) <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="sp-approved-by" required placeholder="Örn: Hasan Bey / Emre Bey / Yönetim Onayı..." class="w-full px-4 py-2.5 bg-slate-900 border border-purple-500/50 rounded-xl text-sm text-white focus:outline-none">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Ödeme Şekli</label>
-                        <select id="sp-payment" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500">
-                            <option value="Kredi Kartı">Kredi Kartı</option>
-                            <option value="Nakit">Nakit</option>
-                            <option value="Havale / EFT">Havale / EFT</option>
-                        </select>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Müşteri İsmi / Firma Adı <span class="text-rose-500">*</span></label>
+                            <input type="text" id="sp-customer" required placeholder="Müşteri adını yazın..." class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Satıcı Seçimi <span class="text-rose-500">*</span></label>
+                            <select id="sp-seller" required class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none"></select>
+                        </div>
                     </div>
-                </div>
 
-                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-300 uppercase">Özel Satış Genel Toplamı (TL):</span>
-                    <span id="sp-total-tl" class="text-xl font-extrabold text-purple-400">0.00 ₺</span>
-                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Teslimat Şekli</label>
+                            <select id="sp-delivery" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
+                                <option value="Kargo">Kargo</option>
+                                <option value="Elden Teslim">Elden Teslim</option>
+                                <option value="Nakliye">Nakliye</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Ödeme Şekli</label>
+                            <select id="sp-payment" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
+                                <option value="Kredi Kartı">Kredi Kartı</option>
+                                <option value="Nakit">Nakit</option>
+                                <option value="Havale / EFT">Havale / EFT</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <div class="flex gap-3 pt-2">
-                    <button type="button" onclick="closeModal('special-sale-modal')" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold">İptal</button>
-                    <button type="submit" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold shadow-lg">
-                        <i class="fa-solid fa-check mr-1"></i> Özel Satışı Tamamla ve Yazdır
-                    </button>
-                </div>
-            </form>
+                    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300 uppercase">Özel Çoklu Satış Genel Toplamı (TL):</span>
+                        <span id="sp-total-tl" class="text-xl font-extrabold text-purple-400">0.00 ₺</span>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" onclick="closeModal('special-sale-modal')" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold">İptal</button>
+                        <button type="submit" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold shadow-lg">
+                            <i class="fa-solid fa-check mr-1"></i> Özel Satışı Tamamla ve Yazdır
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -446,17 +449,17 @@
                 <input type="hidden" id="edit-prod-id">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">Ürün Adı / Modeli *</label>
-                    <input type="text" id="edit-prod-name" required class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                    <input type="text" id="edit-prod-name" required class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Stok Adedi *</label>
-                        <input type="number" id="edit-prod-stock" required min="0" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white text-center focus:outline-none focus:border-amber-500">
+                        <input type="number" id="edit-prod-stock" required min="0" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white text-center focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Para Birimi</label>
-                        <select id="edit-prod-currency" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white font-semibold focus:outline-none focus:border-amber-500">
+                        <select id="edit-prod-currency" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white font-semibold">
                             <option value="TL">₺ Türk Lirası</option>
                             <option value="USD">$ Dolar (USD)</option>
                             <option value="EUR">€ Euro (EUR)</option>
@@ -466,7 +469,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">Birim Fiyat *</label>
-                    <input type="number" id="edit-prod-price" required min="0" step="0.01" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                    <input type="number" id="edit-prod-price" required min="0" step="0.01" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
                 </div>
 
                 <div class="flex gap-3 pt-2">
@@ -488,7 +491,7 @@
                 <p class="text-xs text-slate-400">Bu bilgisayarda ilk kez açılıyor. Lütfen şifrenizi girin.</p>
             </div>
             <form onsubmit="verifyFirstLogin(event)" class="space-y-4">
-                <input type="password" id="first-login-pass" required placeholder="Şifrenizi girin" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-lg tracking-widest text-white focus:outline-none focus:border-amber-500">
+                <input type="password" id="first-login-pass" required placeholder="Şifrenizi girin" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-lg tracking-widest text-white focus:outline-none">
                 <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-sm shadow-lg">Sisteme Giriş Yap</button>
             </form>
         </div>
@@ -505,7 +508,7 @@
                 <p id="security-prompt-desc" class="text-xs text-slate-400">Bu işlemi yapmak için şifre girmeniz gerekiyor.</p>
             </div>
             <form onsubmit="verifySecurityPassword(event)" class="space-y-4">
-                <input type="password" id="security-pass-input" required placeholder="Şifre" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-lg tracking-widest text-white focus:outline-none focus:border-amber-500">
+                <input type="password" id="security-pass-input" required placeholder="Şifre" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-lg tracking-widest text-white focus:outline-none">
                 <div class="flex gap-2">
                     <button type="button" onclick="closeModal('security-prompt-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">İptal</button>
                     <button type="submit" class="flex-1 py-2.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold shadow-lg">Onayla</button>
@@ -534,7 +537,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">$ Dolar Kuru (USD)</label>
                     <div class="relative">
-                        <input type="number" id="modal-rate-usd" step="0.01" min="0" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-white focus:outline-none focus:border-amber-500 text-right pr-10">
+                        <input type="number" id="modal-rate-usd" step="0.01" min="0" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-white text-right pr-10 focus:outline-none">
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₺</span>
                     </div>
                 </div>
@@ -542,7 +545,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">€ Euro Kuru (EUR)</label>
                     <div class="relative">
-                        <input type="number" id="modal-rate-eur" step="0.01" min="0" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-white focus:outline-none focus:border-amber-500 text-right pr-10">
+                        <input type="number" id="modal-rate-eur" step="0.01" min="0" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-white text-right pr-10 focus:outline-none">
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₺</span>
                     </div>
                 </div>
@@ -565,7 +568,7 @@
             <form onsubmit="createNewCategory(event)">
                 <div class="mb-4">
                     <label class="block text-xs text-slate-400 mb-1.5">Başlık Adı *</label>
-                    <input type="text" id="new-cat-name" required placeholder="Örn: FOTOSELLER" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500 uppercase">
+                    <input type="text" id="new-cat-name" required placeholder="Örn: FOTOSELLER" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none uppercase">
                 </div>
                 <div class="mb-6">
                     <label class="block text-xs text-slate-400 mb-1.5">Görsel Seç</label>
@@ -626,7 +629,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">Eklenecek Adet</label>
-                    <input type="number" id="modal-prod-qty" value="1" min="1" oninput="calculateModalTotal()" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-white text-center focus:outline-none focus:border-amber-500">
+                    <input type="number" id="modal-prod-qty" value="1" min="1" oninput="calculateModalTotal()" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-white text-center focus:outline-none">
                 </div>
 
                 <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center justify-between">
@@ -672,13 +675,13 @@
                 <form id="checkout-form" onsubmit="openOrderSummary(event)" class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-slate-800">
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Müşteri İsmi / Firma Adı <span class="text-rose-500">*</span></label>
-                        <input type="text" id="order-customer" required placeholder="Müşteri adını yazın..." class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+                        <input type="text" id="order-customer" required placeholder="Müşteri adını yazın..." class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Satıcı Seçimi <span class="text-rose-500">*</span></label>
                         <div class="flex gap-2">
-                            <select id="order-seller" required class="flex-1 px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500"></select>
+                            <select id="order-seller" required class="flex-1 px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none"></select>
                             <button type="button" onclick="addNewSeller()" class="px-3.5 py-2.5 bg-slate-700 hover:bg-slate-600 text-amber-400 rounded-xl text-sm font-bold transition">
                                 <i class="fa-solid fa-user-plus"></i>
                             </button>
@@ -811,21 +814,21 @@
                 <div class="flex flex-wrap gap-3 items-center">
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">Satıcıya Göre Filtrele</label>
-                        <select id="filter-seller" onchange="renderOrdersList()" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+                        <select id="filter-seller" onchange="renderOrdersList()" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none">
                             <option value="">Tüm Satıcılar</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">Tarihe Göre Filtrele</label>
-                        <input type="date" id="filter-date" onchange="renderOrdersList()" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+                        <input type="date" id="filter-date" onchange="renderOrdersList()" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">Müşteri / Firma Ara</label>
-                        <input type="text" id="filter-customer" oninput="renderOrdersList()" placeholder="Müşteri adı..." class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500">
+                        <input type="text" id="filter-customer" oninput="renderOrdersList()" placeholder="Müşteri adı..." class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">Görünüm Sekmesi</label>
-                        <select id="order-view-tab" onchange="renderOrdersList()" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-amber-400 font-bold focus:outline-none focus:border-amber-500">
+                        <select id="order-view-tab" onchange="renderOrdersList()" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-amber-400 font-bold focus:outline-none">
                             <option value="active">Aktif Satışlar</option>
                             <option value="deleted">Silinenler (Çöp Kutusu)</option>
                         </select>
@@ -871,11 +874,11 @@
             </div>
             <div>
                 <label class="block text-xs text-slate-400 mb-1">Ürün Seçin</label>
-                <select id="extra-prod-select" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500"></select>
+                <select id="extra-prod-select" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none"></select>
             </div>
             <div>
                 <label class="block text-xs text-slate-400 mb-1">Adet</label>
-                <input type="number" id="extra-prod-qty" value="1" min="1" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white text-center focus:outline-none focus:border-amber-500">
+                <input type="number" id="extra-prod-qty" value="1" min="1" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white text-center focus:outline-none">
             </div>
             <div class="flex gap-2 pt-2">
                 <button type="button" onclick="closeModal('add-to-order-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">İptal</button>
@@ -941,11 +944,11 @@
         };
 
         let cart = [];
+        let specialSaleCart = []; // Çoklu özel fiyatlı satış sepeti
         let activeCategoryId = null;
         let uploadingCategoryId = null;
         let selectedProductForCart = null;
         let editingOrderIdForExtra = null;
-        let pendingOrderData = null;
         let lastCreatedOrder = null;
         let activeHistoryOrderIdForPrint = null;
         let currentSecurityAction = null;
@@ -1189,8 +1192,11 @@
             }
         }
 
-        function openSpecialSaleModal() {
-            const catSelect = document.getElementById('sp-category');
+        // ÇOKLU ÖZEL FİYATLI SATIŞ FONKSİYONLARI
+        function openSpecialSaleModal(preselectedProductId = null) {
+            specialSaleCart = [];
+            
+            const catSelect = document.getElementById('sp-modal-cat');
             catSelect.innerHTML = '<option value="">-- Kategori Seçiniz --</option>';
             (appData.categories || []).forEach(cat => {
                 const opt = document.createElement('option');
@@ -1199,13 +1205,11 @@
                 catSelect.appendChild(opt);
             });
 
-            document.getElementById('sp-product').innerHTML = '<option value="">-- Önce Kategori Seçin --</option>';
-            document.getElementById('sp-product-info-box').classList.add('hidden');
-            document.getElementById('sp-custom-price').value = '';
-            document.getElementById('sp-qty').value = 1;
+            document.getElementById('sp-modal-prod').innerHTML = '<option value="">-- Önce Kategori Seçin --</option>';
+            document.getElementById('sp-modal-price').value = '';
+            document.getElementById('sp-modal-qty').value = 1;
             document.getElementById('sp-approved-by').value = '';
             document.getElementById('sp-customer').value = '';
-            document.getElementById('sp-total-tl').innerText = '0.00 ₺';
 
             const sellerSelect = document.getElementById('sp-seller');
             sellerSelect.innerHTML = '<option value="">-- Satıcı Seçiniz --</option>';
@@ -1216,14 +1220,27 @@
                 sellerSelect.appendChild(opt);
             });
 
+            renderSpecialSaleList();
+
+            // Eğer bir ürünün yanındaki özel fiyat butonundan tıklandıysa otomatik doldur
+            if (preselectedProductId) {
+                const prod = (appData.products || []).find(p => p.id === preselectedProductId);
+                if (prod) {
+                    catSelect.value = prod.categoryId;
+                    loadSpecialModalProducts();
+                    document.getElementById('sp-modal-prod').value = prod.id;
+                    document.getElementById('sp-modal-price').value = prod.price;
+                    document.getElementById('sp-modal-curr').value = prod.currency || 'TL';
+                }
+            }
+
             document.getElementById('special-sale-modal').classList.remove('hidden');
         }
 
-        function loadSpecialSaleProducts() {
-            const catId = document.getElementById('sp-category').value;
-            const prodSelect = document.getElementById('sp-product');
+        function loadSpecialModalProducts() {
+            const catId = document.getElementById('sp-modal-cat').value;
+            const prodSelect = document.getElementById('sp-modal-prod');
             prodSelect.innerHTML = '<option value="">-- Ürün Seçiniz --</option>';
-            document.getElementById('sp-product-info-box').classList.add('hidden');
 
             if (!catId) return;
 
@@ -1236,55 +1253,19 @@
             filtered.forEach(prod => {
                 const opt = document.createElement('option');
                 opt.value = prod.id;
-                opt.innerText = `${prod.name} (Stok: ${prod.stock})`;
+                opt.innerText = `${prod.name} (Stok: ${prod.stock}) - ${prod.price} ${getCurrencySymbol(prod.currency)}`;
                 prodSelect.appendChild(opt);
             });
         }
 
-        function updateSpecialSaleProductInfo() {
-            const prodId = document.getElementById('sp-product').value;
-            const infoBox = document.getElementById('sp-product-info-box');
-            if (!prodId) {
-                infoBox.classList.add('hidden');
-                return;
-            }
+        function addSpecialSaleItemToList() {
+            const prodId = document.getElementById('sp-modal-prod').value;
+            const customPrice = parseFloat(document.getElementById('sp-modal-price').value);
+            const currency = document.getElementById('sp-modal-curr').value;
+            const qty = parseInt(document.getElementById('sp-modal-qty').value) || 0;
 
-            const prod = (appData.products || []).find(p => p.id === prodId);
-            if (prod) {
-                infoBox.classList.remove('hidden');
-                document.getElementById('sp-normal-price').innerText = `${prod.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ${getCurrencySymbol(prod.currency)}`;
-                document.getElementById('sp-available-stock').innerText = `${prod.stock} Adet`;
-                document.getElementById('sp-currency').value = prod.currency || 'TL';
-                document.getElementById('sp-qty').max = prod.stock;
-                document.getElementById('sp-qty').value = 1;
-                calculateSpecialSaleTotal();
-            }
-        }
-
-        function calculateSpecialSaleTotal() {
-            const customPrice = parseFloat(document.getElementById('sp-custom-price').value) || 0;
-            const currency = document.getElementById('sp-currency').value;
-            const qty = parseInt(document.getElementById('sp-qty').value) || 0;
-
-            const unitTL = calculateTLPrice(customPrice, currency);
-            const totalTL = unitTL * qty;
-            document.getElementById('sp-total-tl').innerText = `${totalTL.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`;
-        }
-
-        function submitSpecialSale(e) {
-            e.preventDefault();
-            const prodId = document.getElementById('sp-product').value;
-            const customPrice = parseFloat(document.getElementById('sp-custom-price').value);
-            const currency = document.getElementById('sp-currency').value;
-            const qty = parseInt(document.getElementById('sp-qty').value) || 0;
-            const approvedBy = document.getElementById('sp-approved-by').value.trim();
-            const customer = document.getElementById('sp-customer').value.trim();
-            const seller = document.getElementById('sp-seller').value;
-            const delivery = document.getElementById('sp-delivery').value;
-            const payment = document.getElementById('sp-payment').value;
-
-            if (!prodId || isNaN(customPrice) || customPrice < 0 || qty <= 0 || !approvedBy || !customer || !seller) {
-                showToast('Lütfen tüm zorunlu alanları doldurun!', 'error');
+            if (!prodId || isNaN(customPrice) || customPrice < 0 || qty <= 0) {
+                showToast('Lütfen ürün seçin, geçerli özel fiyat ve adet girin!', 'error');
                 return;
             }
 
@@ -1294,10 +1275,105 @@
                 return;
             }
 
-            prod.stock -= qty;
-
+            // Sepette aynı ürün varsa miktar ve fiyatı güncelle veya yeni ekle
+            const existing = specialSaleCart.find(i => i.productId === prodId);
             const unitTL = calculateTLPrice(customPrice, currency);
-            const lineTotalTL = unitTL * qty;
+
+            if (existing) {
+                existing.qty += qty;
+                existing.price = customPrice;
+                existing.currency = currency;
+                existing.unitTL = unitTL;
+                existing.totalTL = unitTL * existing.qty;
+            } else {
+                specialSaleCart.push({
+                    productId: prod.id,
+                    name: prod.name,
+                    price: customPrice,
+                    currency: currency,
+                    unitTL: unitTL,
+                    qty: qty,
+                    totalTL: unitTL * qty
+                });
+            }
+
+            document.getElementById('sp-modal-price').value = '';
+            document.getElementById('sp-modal-qty').value = 1;
+            renderSpecialSaleList();
+            showToast('Ürün özel satış listesine eklendi.');
+        }
+
+        function renderSpecialSaleList() {
+            const container = document.getElementById('special-sale-items-container');
+            const countEl = document.getElementById('sp-items-count');
+            container.innerHTML = '';
+            countEl.innerText = specialSaleCart.length;
+
+            if (specialSaleCart.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-slate-500 text-xs bg-slate-800/40 rounded-xl">Henüz ürün eklenmedi. Yukarıdan ürün seçip ekleyin.</div>`;
+                document.getElementById('sp-total-tl').innerText = '0.00 ₺';
+                return;
+            }
+
+            let grandTotalTL = 0;
+
+            specialSaleCart.forEach((item, idx) => {
+                grandTotalTL += item.totalTL;
+                const sym = getCurrencySymbol(item.currency);
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between bg-slate-800/70 p-3 rounded-xl border border-slate-700/70';
+                div.innerHTML = `
+                    <div>
+                        <p class="font-bold text-white text-xs">${item.name}</p>
+                        <p class="text-[11px] text-slate-400">Özel Fiyat: ${item.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ${sym} x ${item.qty} Adet</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-extrabold text-purple-400 text-xs">${item.totalTL.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                        <button type="button" onclick="removeSpecialSaleItem(${idx})" class="text-slate-500 hover:text-rose-500 p-1"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('sp-total-tl').innerText = `${grandTotalTL.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺`;
+        }
+
+        function removeSpecialSaleItem(idx) {
+            specialSaleCart.splice(idx, 1);
+            renderSpecialSaleList();
+        }
+
+        function submitSpecialSale(e) {
+            e.preventDefault();
+            if (specialSaleCart.length === 0) {
+                showToast('Özel satış listesinde hiç ürün yok!', 'error');
+                return;
+            }
+
+            const approvedBy = document.getElementById('sp-approved-by').value.trim();
+            const customer = document.getElementById('sp-customer').value.trim();
+            const seller = document.getElementById('sp-seller').value;
+            const delivery = document.getElementById('sp-delivery').value;
+            const payment = document.getElementById('sp-payment').value;
+
+            if (!approvedBy || !customer || !seller) {
+                showToast('Lütfen onay veren, müşteri ve satıcı alanlarını doldurun!', 'error');
+                return;
+            }
+
+            // Stok kontrolü ve düşüşü
+            for (let item of specialSaleCart) {
+                const prod = (appData.products || []).find(p => p.id === item.productId);
+                if (!prod || prod.stock < item.qty) {
+                    showToast(`"${item.name}" için yeterli stok kalmadı!`, 'error');
+                    return;
+                }
+            }
+
+            specialSaleCart.forEach(item => {
+                const prod = (appData.products || []).find(p => p.id === item.productId);
+                if (prod) prod.stock -= item.qty;
+            });
 
             const now = new Date();
             const newOrder = {
@@ -1310,14 +1386,7 @@
                 payment: payment,
                 isSpecialPrice: true,
                 specialApprovedBy: approvedBy.toUpperCase(),
-                items: [{
-                    productId: prod.id,
-                    name: prod.name,
-                    price: customPrice,
-                    currency: currency,
-                    qty: qty,
-                    totalTL: lineTotalTL
-                }]
+                items: JSON.parse(JSON.stringify(specialSaleCart))
             };
 
             if(!appData.orders) appData.orders = [];
@@ -1327,7 +1396,7 @@
             saveData();
             closeModal('special-sale-modal');
             document.getElementById('print-options-modal').classList.remove('hidden');
-            showToast('Özel fiyatlı satış tamamlandı!');
+            showToast('Çoklu özel fiyatlı satış tamamlandı!');
         }
 
         function saveRatesFromModal(e) {
@@ -1731,6 +1800,7 @@
                 const tlPrice = calculateTLPrice(prod.price, prod.currency);
                 const kdvTL = tlPrice * 0.20;
 
+                // Stok değiştirme butonları kaldırıldı, salt okunur güncel stok gösteriliyor
                 const stockBadge = prod.stock > 5 
                     ? `<span class="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 font-bold text-xs">${prod.stock} Adet</span>`
                     : prod.stock > 0 
@@ -1785,11 +1855,7 @@
                     </td>
                     <td class="py-4 px-5 font-semibold text-white">${prod.name}</td>
                     <td class="py-4 px-5 text-center">
-                        <div class="inline-flex items-center gap-2 justify-center">
-                            <button onclick="updateStock('${prod.id}', -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">-</button>
-                            ${stockBadge}
-                            <button onclick="updateStock('${prod.id}', 1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">+</button>
-                        </div>
+                        ${stockBadge}
                     </td>
                     <td class="py-4 px-5 text-right font-medium text-slate-300">
                         ${prod.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ${sym}
@@ -1802,6 +1868,11 @@
                     </td>
                     <td class="py-4 px-5 text-right">
                         <div class="inline-flex items-center justify-end gap-2">
+                            <!-- ÖZEL FİYATLI SATIŞ BUTONU (SEPETE EKLENİN SOLUNDA) -->
+                            <button onclick="openSpecialSaleModal('${prod.id}')" title="Bu Ürün İçin Özel Fiyatlı Satış" class="px-3 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/40 text-purple-300 font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-tag"></i> Özel Fiyat
+                            </button>
+
                             <button onclick="openAddToCartModal('${prod.id}')" ${prod.stock <= 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md">
                                 <i class="fa-solid fa-cart-plus"></i> Sepete Ekle
                             </button>
@@ -1855,13 +1926,6 @@
                 showToast('Ürün başarıyla güncellendi!');
                 renderProducts();
             }
-        }
-
-        function updateStock(prodId, delta) {
-            const prod = appData.products.find(p => p.id === prodId);
-            if (!prod || prod.stock + delta < 0) return;
-            prod.stock += delta;
-            saveData();
         }
 
         function deleteProduct(prodId) {
