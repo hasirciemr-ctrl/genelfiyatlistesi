@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + Otomatik KDV)</title>
+    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + Kategori İçi Taşıma)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,11 +45,11 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- ÜST MENÜ (SADELEŞTİRİLMİŞ) -->
+    <!-- ÜST MENÜ -->
     <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-[1700px] mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
             <!-- Logo & Durum -->
-            <div class="flex items-center gap-3 cursor-pointer" onclick="showCategoriesView()">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="navigateHome()">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
                     <i class="fa-solid fa-coins text-white text-xl"></i>
                 </div>
@@ -106,10 +106,19 @@
 
     <!-- ANA İÇERİK -->
     <main class="flex-1 max-w-[1700px] w-full mx-auto px-4 sm:px-6 py-6">
-        <!-- KATEGORİLER GÖRÜNÜMÜ -->
+        <!-- BREADCRUMB (GEÇMİŞ YOLU) -->
+        <nav id="breadcrumb-nav" class="hidden mb-4 flex items-center gap-2 text-xs text-slate-400">
+            <span onclick="navigateHome()" class="hover:text-amber-400 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-house"></i> Ana Kategoriler</span>
+            <span id="bc-sep-1" class="hidden">/</span>
+            <span id="bc-parent-cat" onclick="" class="hidden hover:text-amber-400 cursor-pointer font-bold text-slate-300"></span>
+            <span id="bc-sep-2" class="hidden">/</span>
+            <span id="bc-current-cat" class="text-amber-400 font-bold"></span>
+        </nav>
+
+        <!-- ANA KATEGORİLER GÖRÜNÜMÜ -->
         <section id="categories-view">
-            <!-- SATIŞÇI PERFORMANS PANELİ -->
-            <div class="glass-card rounded-xl mb-6 border border-slate-700/80 shadow-md overflow-hidden">
+            <!-- SATIŞÇI PERFORMANS PANELİ (Sadece Ana Sayfada) -->
+            <div id="seller-performance-container" class="glass-card rounded-xl mb-6 border border-slate-700/80 shadow-md overflow-hidden">
                 <div onclick="toggleSellerChartAccordion()" class="py-2.5 px-4 cursor-pointer bg-slate-800/80 hover:bg-slate-800 transition select-none flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
                         <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
@@ -162,42 +171,61 @@
                 </div>
             </div>
 
-            <!-- KATEGORİLER GRID -->
+            <!-- KATEGORİLER GRID BAŞLIĞI -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-layer-group text-amber-500"></i> Ürün Kategorileri
+                    <h2 id="categories-section-title" class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-amber-500"></i> Ana Kategoriler
                     </h2>
-                    <p class="text-sm text-slate-400 mt-0.5">Ürün eklemek, stok takip etmek, kategori adını değiştirmek veya silmek için kart üzerindeki butonları kullanın.</p>
+                    <p id="categories-section-desc" class="text-sm text-slate-400 mt-0.5">Ürün eklemek, stok takip etmek veya alt kategorilere girmek için kartları kullanın.</p>
                 </div>
-                <button onclick="openAddCategoryModal()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Yeni Başlık (Kategori) Ekle
-                </button>
+                <div class="flex items-center gap-3">
+                    <button onclick="openMassAssignModal()" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-lg shadow-sky-600/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-object-ungroup"></i> Toplu Ürün Taşı / Ata
+                    </button>
+                    <button onclick="openAddCategoryModal(null)" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Yeni Ana Kategori Ekle
+                    </button>
+                </div>
             </div>
             <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3.5"></div>
         </section>
 
-        <!-- ÜRÜNLER GÖRÜNÜMÜ -->
-        <section id="products-view" class="hidden">
+        <!-- DETAY GÖRÜNÜMÜ (ALT KATEGORİLER + ÜRÜNLER) -->
+        <section id="category-detail-view" class="hidden">
+            <!-- ÜST BAŞLIK & BUTONLAR -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-slate-800/60 p-5 rounded-2xl border border-slate-700/80">
                 <div class="flex items-center gap-4">
-                    <button onclick="showCategoriesView()" class="w-11 h-11 rounded-xl bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center transition">
+                    <button onclick="goBackFromDetail()" class="w-11 h-11 rounded-xl bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center transition">
                         <i class="fa-solid fa-arrow-left"></i>
                     </button>
                     <div>
-                        <span class="text-xs font-semibold uppercase tracking-wider text-amber-400">Kategori Detayı</span>
-                        <h2 id="current-category-title" class="text-2xl font-bold text-white">Kategori Adı</h2>
+                        <span id="detail-parent-badge" class="text-xs font-semibold uppercase tracking-wider text-amber-400">Kategori Detayı</span>
+                        <h2 id="detail-category-title" class="text-2xl font-bold text-white">Kategori Adı</h2>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-3">
                     <div class="relative">
                         <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                        <input type="text" id="product-search" oninput="renderProducts()" placeholder="Ürün ara..." class="pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500 w-56">
+                        <input type="text" id="product-search" oninput="renderProducts()" placeholder="Ürün ara..." class="pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500 w-52">
                     </div>
+                    <button id="btn-add-subcategory" onclick="openAddSubcategoryModal()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg transition flex items-center gap-2">
+                        <i class="fa-solid fa-folder-plus"></i> Alt Kategori Ekle
+                    </button>
                     <button onclick="toggleAddProductCard()" id="toggle-add-btn" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm shadow-lg transition flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> Yeni Ürün Ekle
                     </button>
                 </div>
+            </div>
+
+            <!-- ALT KATEGORİLER BÖLÜMÜ -->
+            <div id="subcategories-wrapper" class="hidden mb-8">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-folder-tree text-amber-400"></i> Alt Kategoriler / Modeller
+                    </h3>
+                </div>
+                <div id="subcategories-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3.5"></div>
             </div>
 
             <!-- ÜRÜN EKLEME PANELİ -->
@@ -290,9 +318,9 @@
             </div>
 
             <!-- Ürünler Tablosu -->
-            <div class="glass-card rounded-2xl overflow-hidden">
+            <div id="products-table-wrapper" class="glass-card rounded-2xl overflow-hidden">
                 <div class="px-5 py-3 bg-slate-800/80 border-b border-slate-700 text-xs text-slate-400 flex items-center justify-between">
-                    <span><i class="fa-solid fa-arrows-up-down text-amber-400 mr-1.5"></i> Sol köşedeki tutamaçtan tutup ürünleri yukarı aşağı sürükleyerek sıralayabilirsiniz.</span>
+                    <span><i class="fa-solid fa-arrows-up-down text-amber-400 mr-1.5"></i> Sol köşedeki tutamaçtan tutup ürünleri yukarı aşağı sürükleyerek sıralayabilirsiniz veya tablodan kategorisini değiştirebilirsiniz.</span>
                     <span class="text-amber-400 font-semibold">Tüm fiyatlara otomatik %20 KDV dahildir.</span>
                 </div>
                 <div class="overflow-x-auto">
@@ -300,12 +328,13 @@
                         <thead>
                             <tr class="bg-slate-800/90 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400">
                                 <th class="py-4 px-3 w-10 text-center"></th>
-                                <th class="py-4 px-5">Ürün Adı</th>
-                                <th class="py-4 px-5 text-center">Güncel Stok</th>
-                                <th class="py-4 px-5 text-right">Satış Fiyatı (KDV Hariç)</th>
-                                <th class="py-4 px-5 text-right">KDV (%20)</th>
-                                <th class="py-4 px-5 text-right">TOPLAM SATIŞ (KDV DAHİL)</th>
-                                <th class="py-4 px-5 text-right">İşlemler</th>
+                                <th class="py-4 px-4">Ürün Adı</th>
+                                <th class="py-4 px-4 text-center">Kategori / Başlık</th>
+                                <th class="py-4 px-4 text-center">Güncel Stok</th>
+                                <th class="py-4 px-4 text-right">Satış Fiyatı (KDV Hariç)</th>
+                                <th class="py-4 px-4 text-right">KDV (%20)</th>
+                                <th class="py-4 px-4 text-right">TOPLAM SATIŞ (KDV DAHİL)</th>
+                                <th class="py-4 px-4 text-right">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody id="products-table-body" class="divide-y divide-slate-800 text-sm"></tbody>
@@ -313,13 +342,61 @@
                 </div>
                 <div id="empty-products-msg" class="hidden py-12 text-center text-slate-400">
                     <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
-                    <p>Bu kategoride henüz ürün bulunmuyor.</p>
+                    <p>Bu kategoride henüz doğrudan ürün bulunmuyor.</p>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- MODAL: İMALAT TÜKETİMİ (STOKTAN DÜŞ) -->
+    <!-- MODAL: TOPLU ÜRÜN TAŞI / KATEGORİ ATA -->
+    <div id="mass-assign-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-gradient-to-r from-sky-950/40 to-slate-900 rounded-t-2xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                        <i class="fa-solid fa-object-ungroup text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Toplu Ürün Kategori Atama & Taşıma</h3>
+                        <p class="text-xs text-sky-300">Mevcut ürünlerinizi istediğiniz ana kategoriye veya alt başlığa hızlıca taşıyın.</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('mass-assign-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+
+            <div class="p-4 bg-slate-800/60 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                <div class="relative w-full max-w-xs">
+                    <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="mass-modal-search" oninput="renderMassAssignTable()" placeholder="Ürün ara..." class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                </div>
+                <span class="text-xs text-slate-400">Değişiklikler anında buluta kaydedilir.</span>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800/90 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400">
+                            <th class="py-3 px-4">Ürün Adı</th>
+                            <th class="py-3 px-4 text-center">Stok</th>
+                            <th class="py-3 px-4 text-right">Mevcut Satış Fiyatı</th>
+                            <th class="py-3 px-4 text-center w-72">Atanacağı Kategori / Başlık</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mass-assign-tbody" class="divide-y divide-slate-800 text-sm"></tbody>
+                </table>
+                <div id="empty-mass-msg" class="hidden py-12 text-center text-slate-400">
+                    <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-600"></i>
+                    <p class="text-xs">Sistemde kayıtlı ürün bulunmuyor.</p>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 flex justify-end bg-slate-900/95 rounded-b-2xl">
+                <button onclick="closeModal('mass-assign-modal')" class="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: İMALAT TÜKETİMİ -->
     <div id="manufacturing-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
             <div class="flex justify-between items-center border-b border-slate-800 pb-4">
@@ -607,7 +684,7 @@
                 <button type="submit" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold shadow-lg transition">Kurları Kaydet</button>
             </form>
 
-            <!-- EKSTRA İŞLEM BUTONLARI (KAR ANALİZİ & TÜM STOĞU YAZDIR) -->
+            <!-- EKSTRA İŞLEM BUTONLARI -->
             <div class="space-y-2.5 pt-1">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Yönetici İşlemleri (Şifre İster)</span>
                 
@@ -626,20 +703,21 @@
         </div>
     </div>
 
-    <!-- MODAL: KATEGORİ EKLE -->
+    <!-- MODAL: KATEGORİ / ALT KATEGORİ EKLE -->
     <div id="add-category-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-white">Yeni Başlık Ekle</h3>
+                <h3 id="modal-cat-title" class="text-lg font-bold text-white">Yeni Ana Kategori Ekle</h3>
                 <button onclick="closeModal('add-category-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form onsubmit="createNewCategory(event)">
+                <input type="hidden" id="new-cat-parent-id">
                 <div class="mb-4">
-                    <label class="block text-xs text-slate-400 mb-1.5">Başlık Adı *</label>
-                    <input type="text" id="new-cat-name" required placeholder="Örn: FOTOSELLER" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none uppercase">
+                    <label class="block text-xs text-slate-400 mb-1.5">Kategori Adı *</label>
+                    <input type="text" id="new-cat-name" required placeholder="Örn: BFT" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none uppercase">
                 </div>
                 <div class="mb-6">
-                    <label class="block text-xs text-slate-400 mb-1.5">Görsel Seç</label>
+                    <label class="block text-xs text-slate-400 mb-1.5">Görsel Seç (İsteğe Bağlı)</label>
                     <input type="file" id="new-cat-img" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500/20 file:text-amber-400">
                 </div>
                 <div class="flex justify-end gap-3">
@@ -861,7 +939,7 @@
                     <i class="fa-solid fa-warehouse"></i> Depo İçin Yazdır (Fiyatsız)
                 </button>
             </div>
-            <button onclick="closeModal('print-options-modal'); showCategoriesView();" class="text-xs text-slate-500 hover:text-slate-300 underline pt-2">Kapat ve Ana Ekrana Dön</button>
+            <button onclick="closeModal('print-options-modal'); navigateHome();" class="text-xs text-slate-500 hover:text-slate-300 underline pt-2">Kapat ve Ana Ekrana Dön</button>
         </div>
     </div>
 
@@ -933,28 +1011,6 @@
         </div>
     </div>
 
-    <!-- MODAL: SİPARİŞE ÜRÜN EKLE -->
-    <div id="add-to-order-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="text-base font-bold text-white">Siparişe Ürün Ekle</h3>
-                <button onclick="closeModal('add-to-order-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">Ürün Seçin</label>
-                <select id="extra-prod-select" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none"></select>
-            </div>
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">Adet</label>
-                <input type="number" id="extra-prod-qty" value="1" min="1" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white text-center focus:outline-none">
-            </div>
-            <div class="flex gap-2 pt-2">
-                <button type="button" onclick="closeModal('add-to-order-modal')" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">İptal</button>
-                <button type="button" onclick="confirmAddExtraItem()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg">Ekle ve Stoktan Düş</button>
-            </div>
-        </div>
-    </div>
-
     <!-- TOAST BİLDİRİMİ -->
     <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 border border-amber-500/50 text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3">
         <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
@@ -981,16 +1037,16 @@
         const dbRef = db.ref('stokVerileri');
 
         const defaultCategories = [
-            { id: 'cat_1', name: 'TÜP MOTORLAR', image: '' },
-            { id: 'cat_2', name: 'ZİNCİRLİ MOTORLAR', image: '' },
-            { id: 'cat_3', name: 'YANA KAYAR SETLERİ', image: '' },
-            { id: 'cat_4', name: 'BARİYER SETLERİ', image: '' },
-            { id: 'cat_5', name: 'KUMANDALAR', image: '' },
-            { id: 'cat_6', name: 'ALICI KARTI TAKIMLARI', image: '' },
-            { id: 'cat_7', name: 'ANAKARTLAR', image: '' },
-            { id: 'cat_8', name: 'BAYRAKLAR VE BORU BAŞLARI', image: '' },
-            { id: 'cat_9', name: 'BORULAR', image: '' },
-            { id: 'cat_10', name: 'YEDEK PARÇALAR', image: '' }
+            { id: 'cat_1', name: 'TÜP MOTORLAR', parentId: null, image: '' },
+            { id: 'cat_2', name: 'ZİNCİRLİ MOTORLAR', parentId: null, image: '' },
+            { id: 'cat_3', name: 'YANA KAYAR SETLERİ', parentId: null, image: '' },
+            { id: 'cat_4', name: 'BARİYER SETLERİ', parentId: null, image: '' },
+            { id: 'cat_5', name: 'KUMANDALAR', parentId: null, image: '' },
+            { id: 'cat_6', name: 'ALICI KARTI TAKIMLARI', parentId: null, image: '' },
+            { id: 'cat_7', name: 'ANAKARTLAR', parentId: null, image: '' },
+            { id: 'cat_8', name: 'BAYRAKLAR VE BORU BAŞLARI', parentId: null, image: '' },
+            { id: 'cat_9', name: 'BORULAR', parentId: null, image: '' },
+            { id: 'cat_10', name: 'YEDEK PARÇALAR', parentId: null, image: '' }
         ];
 
         const defaultSellers = [
@@ -1013,17 +1069,14 @@
         };
 
         let cart = [];
-        let specialSaleCart = [];
-        let activeCategoryId = null;
+        let currentCategoryId = null;
         let uploadingCategoryId = null;
         let selectedProductForCart = null;
-        let editingOrderIdForExtra = null;
         let lastCreatedOrder = null;
         let activeHistoryOrderIdForPrint = null;
         let currentSecurityAction = null;
         let pendingEditProductId = null;
         let pendingDeleteCategoryId = null;
-        let pendingEditCategoryId = null;
         let draggedRowIndex = null;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -1056,6 +1109,10 @@
                 if (!appData.deletedOrders) appData.deletedOrders = [];
                 if (!appData.products) appData.products = [];
                 if (!appData.rates) appData.rates = { usd: 34.00, eur: 37.00 };
+
+                appData.categories.forEach(c => {
+                    if (c.parentId === undefined) c.parentId = null;
+                });
             } else {
                 dbRef.set(appData);
             }
@@ -1067,11 +1124,10 @@
                 statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Bulut Senkronize Aktif`;
             }
 
-            if (activeCategoryId) {
-                renderProducts();
+            if (currentCategoryId) {
+                renderCategoryDetail(currentCategoryId);
             } else {
-                renderSellerShareChart();
-                renderCategories();
+                renderHomeCategories();
             }
             updateBadges();
         }, (error) => {
@@ -1087,7 +1143,393 @@
             });
         }
 
-        // --- İMALAT TÜKETİMİ FONKSİYONLARI ---
+        // --- TOPLU ÜRÜN KATEGORİ ATAMA (MASS ASSIGN) FONKSİYONLARI ---
+        function openMassAssignModal() {
+            document.getElementById('mass-modal-search').value = '';
+            renderMassAssignTable();
+            document.getElementById('mass-assign-modal').classList.remove('hidden');
+        }
+
+        function renderMassAssignTable() {
+            const tbody = document.getElementById('mass-assign-tbody');
+            const emptyMsg = document.getElementById('empty-mass-msg');
+            const searchTerm = document.getElementById('mass-modal-search').value.toLowerCase().trim();
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const products = (appData.products || []).filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm));
+
+            if (products.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+            emptyMsg.classList.add('hidden');
+
+            const categories = appData.categories || [];
+
+            products.forEach(prod => {
+                const sym = getCurrencySymbol(prod.currency);
+                let optionsHTML = '';
+                categories.forEach(cat => {
+                    if (!cat.parentId) {
+                        const isSelected = prod.categoryId === cat.id ? 'selected' : '';
+                        optionsHTML += `<option value="${cat.id}" ${isSelected}>📁 ${cat.name}</option>`;
+
+                        const subCats = categories.filter(sub => sub.parentId === cat.id);
+                        subCats.forEach(sub => {
+                            const isSubSelected = prod.categoryId === sub.id ? 'selected' : '';
+                            optionsHTML += `<option value="${sub.id}" ${isSubSelected}>&nbsp;&nbsp;&nbsp;&nbsp;↳ ${cat.name} / ${sub.name}</option>`;
+                        });
+                    }
+                });
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-white">${prod.name}</td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-300">${prod.stock} Adet</td>
+                    <td class="py-3 px-4 text-right font-bold text-amber-400">${prod.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ${sym}</td>
+                    <td class="py-3 px-4 text-center">
+                        <select onchange="updateProductCategoryQuick('${prod.id}', this.value)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-amber-400 font-bold focus:outline-none focus:border-sky-500">
+                            ${optionsHTML}
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateProductCategoryQuick(prodId, newCatId) {
+            const prod = (appData.products || []).find(p => p.id === prodId);
+            if (prod) {
+                prod.categoryId = newCatId;
+                saveData();
+                showToast(`"${prod.name}" yeni kategorisine taşındı!`);
+            }
+        }
+
+        // --- HİBRİT NAVİGASYON ---
+        function navigateHome() {
+            currentCategoryId = null;
+            document.getElementById('category-detail-view').classList.add('hidden');
+            document.getElementById('categories-view').classList.remove('hidden');
+            document.getElementById('breadcrumb-nav').classList.add('hidden');
+            renderSellerShareChart();
+            renderHomeCategories();
+        }
+
+        function openCategoryDetail(catId) {
+            const cat = (appData.categories || []).find(c => c.id === catId);
+            if (!cat) return;
+
+            currentCategoryId = catId;
+            document.getElementById('categories-view').classList.add('hidden');
+            document.getElementById('category-detail-view').classList.remove('hidden');
+            document.getElementById('product-search').value = '';
+            document.getElementById('add-product-card').classList.add('hidden');
+
+            renderCategoryDetail(catId);
+        }
+
+        function goBackFromDetail() {
+            const cat = (appData.categories || []).find(c => c.id === currentCategoryId);
+            if (cat && cat.parentId) {
+                openCategoryDetail(cat.parentId);
+            } else {
+                navigateHome();
+            }
+        }
+
+        function renderHomeCategories() {
+            const grid = document.getElementById('categories-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const rootCategories = (appData.categories || []).filter(c => !c.parentId);
+
+            rootCategories.forEach((cat, index) => {
+                const subCats = (appData.categories || []).filter(c => c.parentId === cat.id);
+                const validCatIds = [cat.id, ...subCats.map(sc => sc.id)];
+                const totalProductCount = (appData.products || []).filter(p => validCatIds.includes(p.categoryId)).length;
+
+                const imageHTML = cat.image 
+                    ? `<img src="${cat.image}" alt="${cat.name}" class="category-img w-full h-full object-cover transition-transform duration-500">`
+                    : `<div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center text-slate-600 group-hover:text-amber-500/80 transition">
+                           <i class="fa-solid fa-microchip text-2xl mb-1"></i>
+                           <span class="text-[8px] uppercase tracking-widest text-slate-500">Görsel Yok</span>
+                       </div>`;
+
+                const subBadge = subCats.length > 0 
+                    ? `<span class="absolute bottom-1.5 left-1.5 bg-amber-500/90 text-slate-950 text-[8px] font-extrabold px-1.5 py-0.5 rounded">${subCats.length} Alt Başlık</span>` 
+                    : '';
+
+                const card = document.createElement('div');
+                card.className = 'category-card group relative bg-slate-800/80 border border-slate-700/80 hover:border-amber-500/70 rounded-xl overflow-hidden shadow-md transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-1';
+                card.innerHTML = `
+                    <div class="relative h-24 w-full overflow-hidden bg-slate-900" onclick="openCategoryDetail('${cat.id}')">
+                        ${imageHTML}
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80"></div>
+                        <span class="absolute top-1.5 left-1.5 bg-slate-900/80 text-amber-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-700">#${index + 1}</span>
+                        ${subBadge}
+                    </div>
+
+                    <div class="absolute top-1.5 right-1.5 flex items-center gap-1 z-10" onclick="event.stopPropagation()">
+                        <button onclick="triggerImageUpload(event, '${cat.id}')" title="Görsel Seç" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-900 border border-slate-700 flex items-center justify-center transition shadow-md">
+                            <i class="fa-solid fa-camera text-[9px]"></i>
+                        </button>
+                        <button onclick="openEditCategoryModal('${cat.id}')" title="Kategori Adını Düzenle" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-sky-500 text-slate-300 hover:text-slate-900 border border-slate-700 flex items-center justify-center transition shadow-md">
+                            <i class="fa-solid fa-pen text-[9px]"></i>
+                        </button>
+                        <button onclick="requestDeleteCategory('${cat.id}')" title="Kategoriyi Sil" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-rose-500 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center transition shadow-md">
+                            <i class="fa-solid fa-trash text-[9px]"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-2.5 flex-1 flex flex-col justify-between" onclick="openCategoryDetail('${cat.id}')">
+                        <h3 class="font-bold text-[11px] text-white group-hover:text-amber-400 transition leading-snug line-clamp-2">${cat.name}</h3>
+                        <div class="mt-1.5 pt-1.5 border-t border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
+                            <span>${totalProductCount} Ürün</span>
+                            <span class="text-amber-500 font-medium">Aç <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderCategoryDetail(catId) {
+            const cat = (appData.categories || []).find(c => c.id === catId);
+            if (!cat) return;
+
+            const nav = document.getElementById('breadcrumb-nav');
+            const sep1 = document.getElementById('bc-sep-1');
+            const parentCatEl = document.getElementById('bc-parent-cat');
+            const sep2 = document.getElementById('bc-sep-2');
+            const currentCatEl = document.getElementById('bc-current-cat');
+
+            nav.classList.remove('hidden');
+            if (cat.parentId) {
+                const parentCat = (appData.categories || []).find(c => c.id === cat.parentId);
+                sep1.classList.remove('hidden');
+                parentCatEl.classList.remove('hidden');
+                parentCatEl.innerText = parentCat ? parentCat.name : '';
+                parentCatEl.setAttribute('onclick', `openCategoryDetail('${cat.parentId}')`);
+                sep2.classList.remove('hidden');
+                currentCatEl.innerText = cat.name;
+
+                document.getElementById('detail-parent-badge').innerText = parentCat ? `${parentCat.name} > Alt Kategori` : 'Alt Kategori';
+                document.getElementById('btn-add-subcategory').classList.add('hidden');
+            } else {
+                sep1.classList.remove('hidden');
+                parentCatEl.classList.add('hidden');
+                sep2.classList.add('hidden');
+                currentCatEl.innerText = cat.name;
+
+                document.getElementById('detail-parent-badge').innerText = 'Ana Kategori';
+                document.getElementById('btn-add-subcategory').classList.remove('hidden');
+            }
+
+            document.getElementById('detail-category-title').innerText = cat.name;
+
+            const subCats = (appData.categories || []).filter(c => c.parentId === catId);
+            const subWrapper = document.getElementById('subcategories-wrapper');
+            const subGrid = document.getElementById('subcategories-grid');
+
+            if (subCats.length > 0) {
+                subWrapper.classList.remove('hidden');
+                subGrid.innerHTML = '';
+
+                subCats.forEach((sub, idx) => {
+                    const subProdCount = (appData.products || []).filter(p => p.categoryId === sub.id).length;
+                    const imageHTML = sub.image 
+                        ? `<img src="${sub.image}" alt="${sub.name}" class="category-img w-full h-full object-cover transition-transform duration-500">`
+                        : `<div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center text-slate-600 group-hover:text-amber-500/80 transition">
+                               <i class="fa-solid fa-folder text-xl mb-1 text-amber-500/60"></i>
+                               <span class="text-[8px] uppercase tracking-widest text-slate-500">Alt Başlık</span>
+                           </div>`;
+
+                    const card = document.createElement('div');
+                    card.className = 'category-card group relative bg-slate-800/80 border border-slate-700/80 hover:border-amber-500/70 rounded-xl overflow-hidden shadow-md transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-1';
+                    card.innerHTML = `
+                        <div class="relative h-20 w-full overflow-hidden bg-slate-900" onclick="openCategoryDetail('${sub.id}')">
+                            ${imageHTML}
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80"></div>
+                        </div>
+                        <div class="absolute top-1.5 right-1.5 flex items-center gap-1 z-10" onclick="event.stopPropagation()">
+                            <button onclick="triggerImageUpload(event, '${sub.id}')" title="Görsel Seç" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-900 border border-slate-700 flex items-center justify-center transition shadow-md">
+                                <i class="fa-solid fa-camera text-[9px]"></i>
+                            </button>
+                            <button onclick="openEditCategoryModal('${sub.id}')" title="Adını Düzenle" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-sky-500 text-slate-300 hover:text-slate-900 border border-slate-700 flex items-center justify-center transition shadow-md">
+                                <i class="fa-solid fa-pen text-[9px]"></i>
+                            </button>
+                            <button onclick="requestDeleteCategory('${sub.id}')" title="Sil" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-rose-500 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center transition shadow-md">
+                                <i class="fa-solid fa-trash text-[9px]"></i>
+                            </button>
+                        </div>
+                        <div class="p-2.5 flex-1 flex flex-col justify-between" onclick="openCategoryDetail('${sub.id}')">
+                            <h4 class="font-bold text-[11px] text-white group-hover:text-amber-400 transition leading-snug line-clamp-2">${sub.name}</h4>
+                            <div class="mt-1.5 pt-1 border-t border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
+                                <span>${subProdCount} Ürün</span>
+                                <span class="text-amber-500 font-medium">Gir <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
+                            </div>
+                        </div>
+                    `;
+                    subGrid.appendChild(card);
+                });
+            } else {
+                subWrapper.classList.add('hidden');
+            }
+
+            renderProducts();
+        }
+
+        function openAddCategoryModal(parentId) {
+            document.getElementById('new-cat-name').value = '';
+            document.getElementById('new-cat-img').value = '';
+            document.getElementById('new-cat-parent-id').value = parentId || '';
+            const titleEl = document.getElementById('modal-cat-title');
+
+            if (!parentId) {
+                titleEl.innerText = 'Yeni Ana Kategori Ekle';
+            } else {
+                const parentCat = (appData.categories || []).find(c => c.id === parentId);
+                titleEl.innerText = `"${parentCat ? parentCat.name : ''}" İçin Alt Kategori Ekle`;
+            }
+            document.getElementById('add-category-modal').classList.remove('hidden');
+        }
+
+        function openAddSubcategoryModal() {
+            if (!currentCategoryId) return;
+            openAddCategoryModal(currentCategoryId);
+        }
+
+        function createNewCategory(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('new-cat-name').value.trim().toUpperCase();
+            const parentIdVal = document.getElementById('new-cat-parent-id').value || null;
+            const imgInput = document.getElementById('new-cat-img').files[0];
+            if (!nameInput) return;
+
+            const finalize = (imgData) => {
+                if(!appData.categories) appData.categories = [];
+                appData.categories.push({
+                    id: 'cat_' + Date.now(),
+                    name: nameInput,
+                    parentId: parentIdVal,
+                    image: imgData || ''
+                });
+                saveData();
+                closeModal('add-category-modal');
+                showToast(`"${nameInput}" eklendi.`);
+                if (currentCategoryId) renderCategoryDetail(currentCategoryId);
+                else renderHomeCategories();
+            };
+
+            if (imgInput) compressImage(imgInput, 400, 0.75, finalize);
+            else finalize('');
+        }
+
+        function triggerImageUpload(event, catId) {
+            event.stopPropagation();
+            uploadingCategoryId = catId;
+            document.getElementById('hidden-cat-image-input').click();
+        }
+
+        function handleCategoryImageChange(event) {
+            const file = event.target.files[0];
+            if (!file || !uploadingCategoryId) return;
+            compressImage(file, 400, 0.75, (base64Img) => {
+                const cat = appData.categories.find(c => c.id === uploadingCategoryId);
+                if (cat) {
+                    cat.image = base64Img;
+                    saveData();
+                    showToast('Görsel güncellendi!');
+                    if (currentCategoryId) renderCategoryDetail(currentCategoryId);
+                    else renderHomeCategories();
+                }
+                event.target.value = '';
+            });
+        }
+
+        function compressImage(file, maxWidth, quality, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    callback(canvas.toDataURL('image/jpeg', quality));
+                };
+            };
+        }
+
+        function openEditCategoryModal(catId) {
+            const cat = (appData.categories || []).find(c => c.id === catId);
+            if (!cat) return;
+            document.getElementById('edit-cat-id').value = cat.id;
+            document.getElementById('edit-cat-name').value = cat.name;
+            document.getElementById('edit-category-modal').classList.remove('hidden');
+        }
+
+        function saveEditedCategoryName(e) {
+            e.preventDefault();
+            const catId = document.getElementById('edit-cat-id').value;
+            const newName = document.getElementById('edit-cat-name').value.trim().toUpperCase();
+            if (!newName) return;
+
+            const cat = (appData.categories || []).find(c => c.id === catId);
+            if (cat) {
+                cat.name = newName;
+                saveData();
+                closeModal('edit-category-modal');
+                showToast('Kategori adı güncellendi.');
+                if (currentCategoryId) renderCategoryDetail(currentCategoryId);
+                else renderHomeCategories();
+            }
+        }
+
+        function requestDeleteCategory(catId) {
+            pendingDeleteCategoryId = catId;
+            currentSecurityAction = 'delete_category_auth';
+            document.getElementById('security-prompt-desc').innerText = 'Kategoriyi silmek için yetkili şifresini (25) girin.';
+            document.getElementById('security-pass-input').value = '';
+            document.getElementById('security-prompt-modal').classList.remove('hidden');
+        }
+
+        function deleteCategoryConfirmed(catId) {
+            const cat = (appData.categories || []).find(c => c.id === catId);
+            if (!cat) return;
+
+            const subCatIds = (appData.categories || []).filter(c => c.parentId === catId).map(c => c.id);
+            subCatIds.push(catId);
+
+            const hasProducts = (appData.products || []).some(p => subCatIds.includes(p.categoryId));
+            if (hasProducts) {
+                if (!confirm(`Bu kategoride veya alt başlıklarında ürünler var. Yine de silmek istiyor musunuz? (Bağlı tüm ürünler silinecek)`)) {
+                    return;
+                }
+                appData.products = (appData.products || []).filter(p => !subCatIds.includes(p.categoryId));
+            }
+
+            const parentRedirect = cat.parentId;
+            appData.categories = appData.categories.filter(c => !subCatIds.includes(c.id));
+            saveData();
+            showToast('Kategori ve bağlı öğeler silindi.');
+            if (parentRedirect) openCategoryDetail(parentRedirect);
+            else navigateHome();
+        }
+
         function openManufacturingModal() {
             const select = document.getElementById('mfg-product-select');
             select.innerHTML = '<option value="">-- Ürün Seçiniz --</option>';
@@ -1317,6 +1759,19 @@
             document.getElementById('modal-rate-usd').value = appData.rates.usd || 34;
             document.getElementById('modal-rate-eur').value = appData.rates.eur || 37;
             document.getElementById('rate-modal').classList.remove('hidden');
+        }
+
+        function saveRatesFromModal(e) {
+            e.preventDefault();
+            const usdVal = parseFloat(document.getElementById('modal-rate-usd').value) || 0;
+            const eurVal = parseFloat(document.getElementById('modal-rate-eur').value) || 0;
+
+            appData.rates.usd = usdVal;
+            appData.rates.eur = eurVal;
+            saveData();
+            closeModal('rate-modal');
+            showToast('Döviz kurları güncelendi.');
+            if (currentCategoryId) renderProducts();
         }
 
         function openProfitAnalysisPasswordPrompt() {
@@ -1549,19 +2004,6 @@
             });
         }
 
-        function saveRatesFromModal(e) {
-            e.preventDefault();
-            const usdVal = parseFloat(document.getElementById('modal-rate-usd').value) || 0;
-            const eurVal = parseFloat(document.getElementById('modal-rate-eur').value) || 0;
-
-            appData.rates.usd = usdVal;
-            appData.rates.eur = eurVal;
-            saveData();
-            closeModal('rate-modal');
-            showToast('Döviz kurları güncelendi.');
-            if (activeCategoryId) renderProducts();
-        }
-
         function saveNewProductPrice() {
             if (!selectedProductForCart) return;
             const newPrice = parseFloat(document.getElementById('new-custom-price').value);
@@ -1580,7 +2022,7 @@
                 calculateModalTotal();
                 document.getElementById('price-edit-box').classList.add('hidden');
                 showToast('Ürün fiyatı güncellendi!');
-                if (activeCategoryId) renderProducts();
+                if (currentCategoryId) renderProducts();
             }
         }
 
@@ -1605,210 +2047,6 @@
             document.getElementById('orders-badge').innerText = (appData.orders || []).length;
         }
 
-        function renderCategories() {
-            const grid = document.getElementById('categories-grid');
-            if(!grid) return;
-            grid.innerHTML = '';
-
-            (appData.categories || []).forEach((cat, index) => {
-                const products = appData.products || [];
-                const productCount = products.filter(p => p.categoryId === cat.id).length;
-                
-                const imageHTML = cat.image 
-                    ? `<img src="${cat.image}" alt="${cat.name}" class="category-img w-full h-full object-cover transition-transform duration-500">`
-                    : `<div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center text-slate-600 group-hover:text-amber-500/80 transition">
-                           <i class="fa-solid fa-microchip text-2xl mb-1"></i>
-                           <span class="text-[8px] uppercase tracking-widest text-slate-500">Görsel Yok</span>
-                       </div>`;
-
-                const card = document.createElement('div');
-                card.className = 'category-card group relative bg-slate-800/80 border border-slate-700/80 hover:border-amber-500/70 rounded-xl overflow-hidden shadow-md transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-1';
-                card.innerHTML = `
-                    <div class="relative h-24 w-full overflow-hidden bg-slate-900" onclick="openCategory('${cat.id}')">
-                        ${imageHTML}
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80"></div>
-                        <span class="absolute top-1.5 left-1.5 bg-slate-900/80 text-amber-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-700">#${index + 1}</span>
-                    </div>
-
-                    <!-- KATEGORİ İŞLEMLERİ (GÖRSEL, DÜZENLE, SİL) -->
-                    <div class="absolute top-1.5 right-1.5 flex items-center gap-1 z-10" onclick="event.stopPropagation()">
-                        <button onclick="triggerImageUpload(event, '${cat.id}')" title="Görsel Seç" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-amber-500 text-slate-300 hover:text-slate-900 border border-slate-700 flex items-center justify-center transition shadow-md">
-                            <i class="fa-solid fa-camera text-[9px]"></i>
-                        </button>
-                        <button onclick="openEditCategoryModal('${cat.id}')" title="Kategori Adını Düzenle" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-sky-500 text-slate-300 hover:text-slate-900 border border-slate-700 flex items-center justify-center transition shadow-md">
-                            <i class="fa-solid fa-pen text-[9px]"></i>
-                        </button>
-                        <button onclick="requestDeleteCategory('${cat.id}')" title="Kategoriyi Sil" class="w-6 h-6 rounded-lg bg-slate-900/90 hover:bg-rose-500 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center transition shadow-md">
-                            <i class="fa-solid fa-trash text-[9px]"></i>
-                        </button>
-                    </div>
-
-                    <div class="p-2.5 flex-1 flex flex-col justify-between" onclick="openCategory('${cat.id}')">
-                        <h3 class="font-bold text-[11px] text-white group-hover:text-amber-400 transition leading-snug line-clamp-2">${cat.name}</h3>
-                        <div class="mt-1.5 pt-1.5 border-t border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
-                            <span>${productCount} Ürün</span>
-                            <span class="text-amber-500 font-medium">Aç <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function triggerImageUpload(event, catId) {
-            event.stopPropagation();
-            uploadingCategoryId = catId;
-            document.getElementById('hidden-cat-image-input').click();
-        }
-
-        function handleCategoryImageChange(event) {
-            const file = event.target.files[0];
-            if (!file || !uploadingCategoryId) return;
-            compressImage(file, 400, 0.75, (base64Img) => {
-                const cat = appData.categories.find(c => c.id === uploadingCategoryId);
-                if (cat) {
-                    cat.image = base64Img;
-                    saveData();
-                    showToast('Görsel güncellendi!');
-                }
-                event.target.value = '';
-            });
-        }
-
-        function compressImage(file, maxWidth, quality, callback) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    callback(canvas.toDataURL('image/jpeg', quality));
-                };
-            };
-        }
-
-        function openAddCategoryModal() {
-            document.getElementById('new-cat-name').value = '';
-            document.getElementById('new-cat-img').value = '';
-            document.getElementById('add-category-modal').classList.remove('hidden');
-        }
-
-        function createNewCategory(e) {
-            e.preventDefault();
-            const nameInput = document.getElementById('new-cat-name').value.trim().toUpperCase();
-            const imgInput = document.getElementById('new-cat-img').files[0];
-            if (!nameInput) return;
-
-            const finalize = (imgData) => {
-                if(!appData.categories) appData.categories = [];
-                appData.categories.push({
-                    id: 'cat_' + Date.now(),
-                    name: nameInput,
-                    image: imgData || ''
-                });
-                saveData();
-                closeModal('add-category-modal');
-                showToast(`"${nameInput}" kategorisi eklendi.`);
-            };
-
-            if (imgInput) compressImage(imgInput, 400, 0.75, finalize);
-            else finalize('');
-        }
-
-        function openEditCategoryModal(catId) {
-            const cat = (appData.categories || []).find(c => c.id === catId);
-            if (!cat) return;
-            document.getElementById('edit-cat-id').value = cat.id;
-            document.getElementById('edit-cat-name').value = cat.name;
-            document.getElementById('edit-category-modal').classList.remove('hidden');
-        }
-
-        function saveEditedCategoryName(e) {
-            e.preventDefault();
-            const catId = document.getElementById('edit-cat-id').value;
-            const newName = document.getElementById('edit-cat-name').value.trim().toUpperCase();
-            if (!newName) return;
-
-            const cat = (appData.categories || []).find(c => c.id === catId);
-            if (cat) {
-                cat.name = newName;
-                saveData();
-                closeModal('edit-category-modal');
-                showToast('Kategori adı güncellendi.');
-            }
-        }
-
-        function requestDeleteCategory(catId) {
-            pendingDeleteCategoryId = catId;
-            currentSecurityAction = 'delete_category_auth';
-            document.getElementById('security-prompt-desc').innerText = 'Kategoriyi silmek için yetkili şifresini (25) girin.';
-            document.getElementById('security-pass-input').value = '';
-            document.getElementById('security-prompt-modal').classList.remove('hidden');
-        }
-
-        function deleteCategoryConfirmed(catId) {
-            const cat = (appData.categories || []).find(c => c.id === catId);
-            if (!cat) return;
-
-            const hasProducts = (appData.products || []).some(p => p.categoryId === catId);
-            if (hasProducts) {
-                if (!confirm(`"${cat.name}" kategorisinde ürünler var. Yine de silmek istiyor musunuz? (İçindeki ürünler de silinecek)`)) {
-                    return;
-                }
-                appData.products = (appData.products || []).filter(p => p.categoryId !== catId);
-            }
-
-            appData.categories = appData.categories.filter(c => c.id !== catId);
-            saveData();
-            showToast('Kategori ve bağlı ürünler silindi.');
-        }
-
-        function openCategory(catId) {
-            activeCategoryId = catId;
-            const cat = appData.categories.find(c => c.id === catId);
-            if (!cat) return;
-            document.getElementById('current-category-title').innerText = cat.name;
-            document.getElementById('product-search').value = '';
-            document.getElementById('add-product-card').classList.add('hidden');
-            document.getElementById('categories-view').classList.add('hidden');
-            document.getElementById('products-view').classList.remove('hidden');
-            renderProducts();
-        }
-
-        function showCategoriesView() {
-            activeCategoryId = null;
-            document.getElementById('products-view').classList.add('hidden');
-            document.getElementById('categories-view').classList.remove('hidden');
-            renderSellerShareChart();
-            renderCategories();
-        }
-
-        function toggleAddProductCard() {
-            const card = document.getElementById('add-product-card');
-            if (card.classList.contains('hidden')) {
-                document.querySelector('input[name="add-price-mode"][value="direct"]').checked = true;
-                setAddPriceMode('direct');
-                document.getElementById('prod-direct-buy').value = '';
-                document.getElementById('prod-direct-price').value = '';
-                document.getElementById('add-direct-profit-val').innerText = 'Alış girilmedi';
-                card.classList.remove('hidden');
-                document.getElementById('prod-name').focus();
-            } else {
-                card.classList.add('hidden');
-            }
-        }
-
         function printAllStockList() {
             const printArea = document.getElementById('print-area');
             const products = appData.products || [];
@@ -1824,7 +2062,10 @@
             let globalTotalStock = 0;
 
             categories.forEach(cat => {
-                const catProducts = products.filter(p => p.categoryId === cat.id);
+                const subCatIds = categories.filter(sc => sc.parentId === cat.id).map(sc => sc.id);
+                const validCatIds = [cat.id, ...subCatIds];
+                const catProducts = products.filter(p => validCatIds.includes(p.categoryId));
+
                 if (catProducts.length > 0) {
                     rowsHTML += `
                         <tr style="background: #e2e8f0; font-weight: bold;">
@@ -1849,6 +2090,31 @@
                     });
                 }
             });
+
+            const assignedIds = new Set(categories.map(c => c.id));
+            const orphanProducts = products.filter(p => !assignedIds.has(p.categoryId));
+            if (orphanProducts.length > 0) {
+                rowsHTML += `
+                    <tr style="background: #fee2e2; font-weight: bold;">
+                        <td colspan="4" style="padding: 8px 10px; font-size: 14px; color: #991b1b; border-bottom: 2px solid #fecaca;">
+                            KATEGORİSİZ / DİĞER ÜRÜNLER
+                        </td>
+                    </tr>
+                `;
+                orphanProducts.forEach((prod, idx) => {
+                    globalItemCount++;
+                    globalTotalStock += prod.stock;
+                    const totalWithKDV = calculateTLPrice(prod.price, prod.currency) * 1.20;
+                    rowsHTML += `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 8px 10px; text-align: center; color: #64748b;">${idx + 1}</td>
+                            <td style="padding: 8px 10px; font-weight: bold; color: #0f172a;">${prod.name}</td>
+                            <td style="padding: 8px 10px; text-align: center; font-weight: bold; color: #047857;">${prod.stock} Adet</td>
+                            <td style="padding: 8px 10px; text-align: right; font-weight: bold; color: #d97706;">${totalWithKDV.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺ (KDV Dahil)</td>
+                        </tr>
+                    `;
+                });
+            }
 
             const nowStr = new Date().toLocaleString('tr-TR');
 
@@ -1891,7 +2157,7 @@
 
         function addProduct(e) {
             e.preventDefault();
-            if (!activeCategoryId) return;
+            if (!currentCategoryId) return;
             const name = document.getElementById('prod-name').value.trim();
             const stock = parseInt(document.getElementById('prod-stock').value);
             const currency = document.getElementById('prod-currency').value;
@@ -1923,7 +2189,7 @@
             if(!appData.products) appData.products = [];
             appData.products.push({
                 id: 'prod_' + Date.now(),
-                categoryId: activeCategoryId,
+                categoryId: currentCategoryId,
                 name, stock, buyPrice, price: parseFloat(price.toFixed(2)), currency, isAutoCalc, profitRate
             });
 
@@ -1942,14 +2208,33 @@
             return '₺';
         }
 
+        function toggleAddProductCard() {
+            const card = document.getElementById('add-product-card');
+            if (card.classList.contains('hidden')) {
+                document.querySelector('input[name="add-price-mode"][value="direct"]').checked = true;
+                setAddPriceMode('direct');
+                document.getElementById('prod-direct-buy').value = '';
+                document.getElementById('prod-direct-price').value = '';
+                document.getElementById('add-direct-profit-val').innerText = 'Alış girilmedi';
+                card.classList.remove('hidden');
+                document.getElementById('prod-name').focus();
+            } else {
+                card.classList.add('hidden');
+            }
+        }
+
         function renderProducts() {
             const tbody = document.getElementById('products-table-body');
             const emptyMsg = document.getElementById('empty-products-msg');
             const searchTerm = document.getElementById('product-search').value.toLowerCase();
             const products = appData.products || [];
+            const categories = appData.categories || [];
+
+            const subCatIds = categories.filter(c => c.parentId === currentCategoryId).map(c => c.id);
+            const validCatIds = [currentCategoryId, ...subCatIds];
 
             const filtered = products.filter(p => 
-                p.categoryId === activeCategoryId && 
+                validCatIds.includes(p.categoryId) && 
                 p.name.toLowerCase().includes(searchTerm)
             );
 
@@ -1972,6 +2257,21 @@
                         ? `<span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 font-bold text-xs">Kritik: ${prod.stock} Adet</span>`
                         : `<span class="px-3 py-1 rounded-full bg-rose-500/15 text-rose-400 font-bold text-xs">Tükendi</span>`;
 
+                // Ürün satırı için kategori seçim menüsü oluştur
+                let categoryOptionsHTML = '';
+                categories.forEach(cat => {
+                    if (!cat.parentId) {
+                        const isSelected = prod.categoryId === cat.id ? 'selected' : '';
+                        categoryOptionsHTML += `<option value="${cat.id}" ${isSelected}>📁 ${cat.name}</option>`;
+                        
+                        const subCats = categories.filter(sub => sub.parentId === cat.id);
+                        subCats.forEach(sub => {
+                            const isSubSelected = prod.categoryId === sub.id ? 'selected' : '';
+                            categoryOptionsHTML += `<option value="${sub.id}" ${isSubSelected}>&nbsp;&nbsp;&nbsp;&nbsp;↳ ${cat.name} / ${sub.name}</option>`;
+                        });
+                    }
+                });
+
                 const tr = document.createElement('tr');
                 tr.className = 'draggable-row hover:bg-slate-800/40 transition';
                 tr.setAttribute('draggable', searchTerm === '');
@@ -1987,12 +2287,12 @@
                     if (draggedRowIndex === null || draggedRowIndex === targetIndex) return;
 
                     const allProducts = appData.products;
-                    const catProducts = allProducts.filter(p => p.categoryId === activeCategoryId);
+                    const catProducts = allProducts.filter(p => validCatIds.includes(p.categoryId));
                     const movedItem = catProducts[draggedRowIndex];
                     catProducts.splice(draggedRowIndex, 1);
                     catProducts.splice(targetIndex, 0, movedItem);
 
-                    const otherProducts = allProducts.filter(p => p.categoryId !== activeCategoryId);
+                    const otherProducts = allProducts.filter(p => !validCatIds.includes(p.categoryId));
                     appData.products = [...otherProducts, ...catProducts];
 
                     saveData();
@@ -2006,21 +2306,26 @@
                             <i class="fa-solid fa-grip-vertical"></i>
                         </div>
                     </td>
-                    <td class="py-4 px-5 font-semibold text-white">${prod.name}</td>
-                    <td class="py-4 px-5 text-center">${stockBadge}</td>
-                    <td class="py-4 px-5 text-right font-medium text-slate-200">
+                    <td class="py-4 px-4 font-semibold text-white">${prod.name}</td>
+                    <td class="py-4 px-4 text-center">
+                        <select onchange="updateProductCategoryQuick('${prod.id}', this.value)" class="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-amber-400 font-bold focus:outline-none focus:border-sky-500">
+                            ${categoryOptionsHTML}
+                        </select>
+                    </td>
+                    <td class="py-4 px-4 text-center">${stockBadge}</td>
+                    <td class="py-4 px-4 text-right font-medium text-slate-200">
                         ${prod.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ${sym}
                     </td>
-                    <td class="py-4 px-5 text-right font-semibold text-sky-400">
+                    <td class="py-4 px-4 text-right font-semibold text-sky-400">
                         +${kdvTL.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺
                     </td>
-                    <td class="py-4 px-5 text-right font-extrabold text-amber-400 text-xl">
+                    <td class="py-4 px-4 text-right font-extrabold text-amber-400 text-xl">
                         ${totalWithKDV.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺
                     </td>
-                    <td class="py-4 px-5 text-right">
+                    <td class="py-4 px-4 text-right">
                         <div class="inline-flex items-center justify-end gap-2">
-                            <button onclick="openAddToCartModal('${prod.id}')" ${prod.stock <= 0 ? 'disabled' : ''} class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md">
-                                <i class="fa-solid fa-cart-plus"></i> Sepete Ekle
+                            <button onclick="openAddToCartModal('${prod.id}')" ${prod.stock <= 0 ? 'disabled' : ''} class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md">
+                                <i class="fa-solid fa-cart-plus"></i> Sepet
                             </button>
                             <button onclick="openEditProductModal('${prod.id}')" title="Ürünü Düzenle" class="p-2 text-slate-400 hover:text-amber-400 transition bg-slate-800 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-pen-to-square"></i></button>
                             <button onclick="deleteProduct('${prod.id}')" title="Ürünü Sil" class="p-2 text-slate-500 hover:text-rose-500 transition bg-slate-800 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-trash"></i></button>
@@ -2118,6 +2423,7 @@
             appData.products = appData.products.filter(p => p.id !== prodId);
             saveData();
             showToast('Ürün silindi.');
+            renderProducts();
         }
 
         function openAddToCartModal(prodId) {
@@ -2238,7 +2544,6 @@
             let grandTotalTL = 0;
 
             cart.forEach((item, idx) => {
-                const sym = getCurrencySymbol(item.currency);
                 const currentUnitTLWithKDV = calculateTLPrice(item.price, item.currency) * 1.20;
                 const lineTotalTL = currentUnitTLWithKDV * item.qty;
                 grandTotalTL += lineTotalTL;
@@ -2287,6 +2592,8 @@
             updateBadges();
             renderCart();
         }
+
+        let pendingOrderData = null;
 
         function openOrderSummary(e) {
             e.preventDefault();
@@ -2425,12 +2732,6 @@
                 ? (order.isSpecialPrice ? 'ÖZEL FİYATLI SATIŞ FİŞİ (%20 KDV DAHİL)' : 'SATIŞ FİŞİ (%20 KDV DAHİL)') 
                 : 'DEPO SEVK VE TOPLAMA FİŞİ';
 
-            const specialNoteHTML = (order.isSpecialPrice && type === 'seller')
-                ? `<div style="background: #f3e8ff; border: 1px solid #c084fc; padding: 8px 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #581c87;">
-                       <b>ÖZEL FİYATLI SATIŞ</b> — Onay Veren (Kimden Alındı): <b>${order.specialApprovedBy || 'Belirtilmedi'}</b>
-                   </div>`
-                : '';
-
             printArea.innerHTML = `
                 <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; color: black; background: white; padding: 20px;">
                     <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
@@ -2443,8 +2744,6 @@
                             <p style="margin: 4px 0 0 0;"><b>Tarih:</b> ${order.date}</p>
                         </div>
                     </div>
-
-                    ${specialNoteHTML}
 
                     <div style="background: #f9f9f9; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; display: flex; justify-content: space-between;">
                         <div>
@@ -2555,25 +2854,14 @@
                         <span>${i.qty}x ${i.name} (${(i.totalTL / i.qty).toLocaleString('tr-TR', {maximumFractionDigits: 2})} ₺ KDV Dahil)</span>
                         <div class="flex items-center gap-3">
                             <span class="font-semibold text-amber-400">${(i.totalTL || 0).toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
-                            ${viewTab === 'active' ? `<button onclick="removeProductFromOrder('${order.id}', ${iIdx})" title="Ürünü Siparişten Çıkar" class="text-slate-500 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>` : ''}
                         </div>
                     </li>`
                 ).join('');
 
                 const orderTotalTL = (order.items || []).reduce((sum, i) => sum + (i.totalTL || 0), 0);
 
-                const specialBadgeHTML = order.isSpecialPrice 
-                    ? `<span class="px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/50 text-purple-300 text-[11px] font-extrabold tracking-wide flex items-center gap-1"><i class="fa-solid fa-tag text-[9px]"></i> ÖZEL FİYATLI</span>` 
-                    : order.seller === 'FABRİKA İÇİ'
-                        ? `<span class="px-2.5 py-0.5 rounded-full bg-sky-500/20 border border-sky-500/50 text-sky-300 text-[11px] font-extrabold tracking-wide flex items-center gap-1"><i class="fa-solid fa-industry text-[9px]"></i> İMALAT TÜKETİMİ</span>`
-                        : '';
-
                 const card = document.createElement('div');
-                card.className = order.isSpecialPrice 
-                    ? 'bg-slate-800/70 border border-purple-500/50 rounded-xl overflow-hidden shadow-md' 
-                    : order.seller === 'FABRİKA İÇİ'
-                        ? 'bg-slate-800/70 border border-sky-500/50 rounded-xl overflow-hidden shadow-md'
-                        : 'bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden shadow-md';
+                card.className = 'bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden shadow-md';
                 
                 let actionButtonsHTML = '';
                 if (viewTab === 'active') {
@@ -2595,9 +2883,8 @@
                             <i class="fa-solid fa-chevron-down accordion-icon text-slate-400 text-xs transition-transform duration-300"></i>
                             <div>
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span class="text-xs font-bold ${order.isSpecialPrice ? 'text-purple-400' : order.seller === 'FABRİKA İÇİ' ? 'text-sky-400' : 'text-amber-400'}">${order.id}</span>
+                                    <span class="text-xs font-bold text-amber-400">${order.id}</span>
                                     <span class="text-xs text-slate-400">(${order.date})</span>
-                                    ${specialBadgeHTML}
                                 </div>
                                 <h4 class="font-bold text-white text-base mt-0.5">${order.customer}</h4>
                             </div>
