@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + Kategori İçi Taşıma)</title>
+    <title>Otomasyon Stok & Satış Yönetim Sistemi (Pro + KDV Dahil Giriş)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -180,9 +180,6 @@
                     <p id="categories-section-desc" class="text-sm text-slate-400 mt-0.5">Ürün eklemek, stok takip etmek veya alt kategorilere girmek için kartları kullanın.</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button onclick="openMassAssignModal()" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-lg shadow-sky-600/20 transition flex items-center gap-2">
-                        <i class="fa-solid fa-object-ungroup"></i> Toplu Ürün Taşı / Ata
-                    </button>
                     <button onclick="openAddCategoryModal(null)" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> Yeni Ana Kategori Ekle
                     </button>
@@ -257,6 +254,18 @@
                         </div>
                     </div>
 
+                    <!-- KDV DAHİL BUTONU / SEÇENEĞİ -->
+                    <div class="bg-slate-800/80 border border-sky-500/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3">
+                        <label class="flex items-center gap-3 cursor-pointer select-none">
+                            <input type="checkbox" id="prod-kdv-included" onchange="calculateDirectProfit(); calculateProductSellPrice();" class="w-5 h-5 accent-sky-500 rounded cursor-pointer">
+                            <div>
+                                <span class="text-xs sm:text-sm font-extrabold text-sky-400 block">Fiyatları KDV Dahil Giriyorum (%20 Üzerine Ekleme)</span>
+                                <span class="text-[11px] text-slate-400">İşaretlerseniz girdiğiniz satış fiyatı KDV dahil kabul edilir, tablo ve sepette üzerine tekrar %20 KDV eklenmez.</span>
+                            </div>
+                        </label>
+                        <span id="add-kdv-status-badge" class="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-400 text-xs font-bold border border-amber-500/30">KDV Hariç Giriliyor (+%20 Eklenecek)</span>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                         <label id="add-box-direct" class="cursor-pointer border-2 border-amber-500 bg-slate-800/90 rounded-xl p-4 transition-all flex flex-col justify-between">
                             <div class="flex items-center gap-2.5 mb-3">
@@ -273,10 +282,14 @@
                                     <input type="number" id="prod-direct-price" step="0.01" min="0" placeholder="Örn: 50.00" oninput="calculateDirectProfit()" class="w-full px-3 py-2 bg-slate-900 border border-amber-500/60 rounded-xl text-sm font-extrabold text-white text-center focus:outline-none">
                                 </div>
                             </div>
-                            <div class="mt-3 pt-2.5 border-t border-slate-700/60 text-xs">
+                            <div class="mt-3 pt-2.5 border-t border-slate-700/60 space-y-1 text-xs">
                                 <div class="flex items-center justify-between text-slate-300">
                                     <span>Net Kar Durumu:</span>
                                     <span id="add-direct-profit-val" class="font-extrabold text-amber-400 text-sm">Alış girilmedi</span>
+                                </div>
+                                <div class="flex items-center justify-between text-slate-400">
+                                    <span>Müşteriye Çıkacak (KDV Dahil):</span>
+                                    <span id="add-direct-final-preview" class="font-extrabold text-sky-400 text-sm">0.00</span>
                                 </div>
                             </div>
                         </label>
@@ -296,7 +309,7 @@
                                     <input type="number" id="prod-profit-rate" disabled value="35" min="0" step="0.1" oninput="calculateProductSellPrice()" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-bold text-amber-400 text-center focus:outline-none">
                                 </div>
                             </div>
-                            <div class="mt-3 pt-2.5 border-t border-slate-700/60 space-y-1.5 text-xs">
+                            <div class="mt-3 pt-2.5 border-t border-slate-700/60 space-y-1 text-xs">
                                 <div class="flex items-center justify-between text-slate-300">
                                     <span>Elde Ettiğiniz Net Kar:</span>
                                     <span id="add-net-profit-val" class="font-extrabold text-amber-400 text-sm">0.00</span>
@@ -319,9 +332,14 @@
 
             <!-- Ürünler Tablosu -->
             <div id="products-table-wrapper" class="glass-card rounded-2xl overflow-hidden">
-                <div class="px-5 py-3 bg-slate-800/80 border-b border-slate-700 text-xs text-slate-400 flex items-center justify-between">
-                    <span><i class="fa-solid fa-arrows-up-down text-amber-400 mr-1.5"></i> Sol köşedeki tutamaçtan tutup ürünleri yukarı aşağı sürükleyerek sıralayabilirsiniz veya tablodan kategorisini değiştirebilirsiniz.</span>
-                    <span class="text-amber-400 font-semibold">Tüm fiyatlara otomatik %20 KDV dahildir.</span>
+                <div class="px-5 py-3 bg-slate-800/80 border-b border-slate-700 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2">
+                    <span><i class="fa-solid fa-arrows-up-down text-amber-400 mr-1.5"></i> Sol köşedeki tutamaçtan tutup ürünleri yukarı aşağı sürükleyerek sıralayabilirsiniz.</span>
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="toggleAllKdvDetails()" id="toggle-all-kdv-btn" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-700 border border-slate-700 text-sky-400 font-bold text-[11px] transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-eye"></i> <span id="toggle-all-kdv-label">KDV & Hariç Fiyatları Göster</span>
+                        </button>
+                        <span class="text-amber-400 font-semibold">Tüm fiyatlara otomatik %20 KDV dahildir.</span>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -329,10 +347,10 @@
                             <tr class="bg-slate-800/90 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400">
                                 <th class="py-4 px-3 w-10 text-center"></th>
                                 <th class="py-4 px-4">Ürün Adı</th>
-                                <th class="py-4 px-4 text-center">Kategori / Başlık</th>
+                                <th id="th-cat-col" class="py-4 px-4 text-center hidden">Kategori / Başlık</th>
                                 <th class="py-4 px-4 text-center">Güncel Stok</th>
-                                <th class="py-4 px-4 text-right">Satış Fiyatı (KDV Hariç)</th>
-                                <th class="py-4 px-4 text-right">KDV (%20)</th>
+                                <th id="th-ex-kdv" class="py-4 px-4 text-right hidden">$ SATIŞ FİYATI (KDV HARİÇ )</th>
+                                <th id="th-kdv-amt" class="py-4 px-4 text-right hidden">KDV (%20)</th>
                                 <th class="py-4 px-4 text-right">TOPLAM SATIŞ (KDV DAHİL)</th>
                                 <th class="py-4 px-4 text-right">İşlemler</th>
                             </tr>
@@ -347,54 +365,6 @@
             </div>
         </section>
     </main>
-
-    <!-- MODAL: TOPLU ÜRÜN TAŞI / KATEGORİ ATA -->
-    <div id="mass-assign-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
-            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-gradient-to-r from-sky-950/40 to-slate-900 rounded-t-2xl">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
-                        <i class="fa-solid fa-object-ungroup text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-white">Toplu Ürün Kategori Atama & Taşıma</h3>
-                        <p class="text-xs text-sky-300">Mevcut ürünlerinizi istediğiniz ana kategoriye veya alt başlığa hızlıca taşıyın.</p>
-                    </div>
-                </div>
-                <button onclick="closeModal('mass-assign-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
-            </div>
-
-            <div class="p-4 bg-slate-800/60 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
-                <div class="relative w-full max-w-xs">
-                    <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                    <input type="text" id="mass-modal-search" oninput="renderMassAssignTable()" placeholder="Ürün ara..." class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
-                </div>
-                <span class="text-xs text-slate-400">Değişiklikler anında buluta kaydedilir.</span>
-            </div>
-
-            <div class="p-6 overflow-y-auto flex-1">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/90 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400">
-                            <th class="py-3 px-4">Ürün Adı</th>
-                            <th class="py-3 px-4 text-center">Stok</th>
-                            <th class="py-3 px-4 text-right">Mevcut Satış Fiyatı</th>
-                            <th class="py-3 px-4 text-center w-72">Atanacağı Kategori / Başlık</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mass-assign-tbody" class="divide-y divide-slate-800 text-sm"></tbody>
-                </table>
-                <div id="empty-mass-msg" class="hidden py-12 text-center text-slate-400">
-                    <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-600"></i>
-                    <p class="text-xs">Sistemde kayıtlı ürün bulunmuyor.</p>
-                </div>
-            </div>
-
-            <div class="p-4 border-t border-slate-800 flex justify-end bg-slate-900/95 rounded-b-2xl">
-                <button onclick="closeModal('mass-assign-modal')" class="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold">Kapat</button>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL: İMALAT TÜKETİMİ -->
     <div id="manufacturing-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
@@ -494,8 +464,8 @@
                             <th class="py-3 px-4">Ürün / Model Adı</th>
                             <th class="py-3 px-4 text-center">Stok</th>
                             <th class="py-3 px-4 text-right">Alış / Geliş Fiyatı</th>
-                            <th class="py-3 px-4 text-right">Satış Fiyatı</th>
-                            <th class="py-3 px-4 text-right">Birim Net Kar (TL)</th>
+                            <th class="py-3 px-4 text-right">$ SATIŞ FİYATI (KDV HARİÇ )</th>
+                            <th class="py-3 px-4 text-right">Birim Net Kar</th>
                             <th class="py-3 px-4 text-right">Kar Oranı (%)</th>
                         </tr>
                     </thead>
@@ -550,6 +520,18 @@
                     </div>
                 </div>
 
+                <!-- DÜZENLEME MODALI KDV DAHİL BUTONU -->
+                <div class="bg-slate-800/80 border border-sky-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+                    <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" id="edit-prod-kdv-included" onchange="onEditKdvCheckboxToggle()" class="w-4 h-4 accent-sky-500 rounded cursor-pointer">
+                        <div>
+                            <span class="text-xs font-extrabold text-sky-400 block">Fiyatları KDV Dahil Giriyorum (%20 Üzerine Ekleme)</span>
+                            <span class="text-[10px] text-slate-400">İşaretli ise girdiğiniz fiyat KDV dahil olarak kabul edilir.</span>
+                        </div>
+                    </label>
+                    <span id="edit-kdv-status-badge" class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-400 text-[11px] font-bold border border-amber-500/30">KDV Hariç (+%20 Eklenecek)</span>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                     <label id="edit-box-direct" class="cursor-pointer border-2 border-amber-500 bg-slate-800/90 rounded-xl p-4 transition-all flex flex-col justify-between">
                         <div class="flex items-center gap-2.5 mb-3">
@@ -566,10 +548,14 @@
                                 <input type="number" id="edit-prod-direct-price" step="0.01" min="0" placeholder="Örn: 50.00" oninput="calculateEditDirectProfit()" class="w-full px-3 py-2 bg-slate-900 border border-amber-500/60 rounded-xl text-sm font-extrabold text-white text-center focus:outline-none">
                             </div>
                         </div>
-                        <div class="mt-3 pt-2.5 border-t border-slate-700/60 text-xs">
+                        <div class="mt-3 pt-2.5 border-t border-slate-700/60 space-y-1 text-xs">
                             <div class="flex items-center justify-between text-slate-300">
                                 <span>Net Kar Durumu:</span>
                                 <span id="edit-direct-profit-val" class="font-extrabold text-amber-400 text-sm">Alış girilmedi</span>
+                            </div>
+                            <div class="flex items-center justify-between text-slate-400">
+                                <span>Müşteriye Çıkacak (KDV Dahil):</span>
+                                <span id="edit-direct-final-preview" class="font-extrabold text-sky-400 text-sm">0.00</span>
                             </div>
                         </div>
                     </label>
@@ -589,7 +575,7 @@
                                 <input type="number" id="edit-prod-profit-rate" disabled value="35" min="0" step="0.1" oninput="calculateEditProductSellPrice()" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-bold text-amber-400 text-center focus:outline-none">
                             </div>
                         </div>
-                        <div class="mt-3 pt-2.5 border-t border-slate-700/60 space-y-1.5 text-xs">
+                        <div class="mt-3 pt-2.5 border-t border-slate-700/60 space-y-1 text-xs">
                             <div class="flex items-center justify-between text-slate-300">
                                 <span>Elde Ettiğiniz Net Kar:</span>
                                 <span id="edit-net-profit-val" class="font-extrabold text-amber-400 text-sm">0.00</span>
@@ -765,7 +751,7 @@
             </div>
 
             <div id="price-edit-box" class="hidden bg-slate-800 p-3 rounded-xl border border-amber-500/40 space-y-2">
-                <span class="text-[10px] font-bold text-amber-400 uppercase">Yeni Birim Fiyat Belirle (KDV Hariç):</span>
+                <span class="text-[10px] font-bold text-amber-400 uppercase">$ SATIŞ FİYATI (KDV HARİÇ ) Belirle:</span>
                 <div class="flex gap-2">
                     <input type="number" id="new-custom-price" step="0.01" min="0" placeholder="Yeni Fiyat" class="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white">
                     <button onclick="saveNewProductPrice()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">Uygula</button>
@@ -1078,6 +1064,9 @@
         let pendingEditProductId = null;
         let pendingDeleteCategoryId = null;
         let draggedRowIndex = null;
+        let activeCategoryEditProdId = null;
+        let showAllKdvDetails = false;
+        let expandedKdvProductIds = new Set();
 
         window.addEventListener('DOMContentLoaded', () => {
             const isAuthorized = localStorage.getItem('hasircilar_authorized');
@@ -1143,67 +1132,86 @@
             });
         }
 
-        // --- TOPLU ÜRÜN KATEGORİ ATAMA (MASS ASSIGN) FONKSİYONLARI ---
-        function openMassAssignModal() {
-            document.getElementById('mass-modal-search').value = '';
-            renderMassAssignTable();
-            document.getElementById('mass-assign-modal').classList.remove('hidden');
+        function toggleAllKdvDetails() {
+            showAllKdvDetails = !showAllKdvDetails;
+            expandedKdvProductIds.clear();
+            if (!showAllKdvDetails) {
+                activeCategoryEditProdId = null;
+            }
+            syncKdvColumnHeaders();
+            renderProducts();
         }
 
-        function renderMassAssignTable() {
-            const tbody = document.getElementById('mass-assign-tbody');
-            const emptyMsg = document.getElementById('empty-mass-msg');
-            const searchTerm = document.getElementById('mass-modal-search').value.toLowerCase().trim();
-            if (!tbody) return;
-
-            tbody.innerHTML = '';
-            const products = (appData.products || []).filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm));
-
-            if (products.length === 0) {
-                emptyMsg.classList.remove('hidden');
-                return;
+        function toggleRowKdvDetail(prodId) {
+            if (expandedKdvProductIds.has(prodId)) {
+                expandedKdvProductIds.delete(prodId);
+            } else {
+                expandedKdvProductIds.add(prodId);
             }
-            emptyMsg.classList.add('hidden');
+            syncKdvColumnHeaders();
+            renderProducts();
+        }
 
+        function syncKdvColumnHeaders() {
+            const anyVisible = showAllKdvDetails || expandedKdvProductIds.size > 0;
+            const thCat = document.getElementById('th-cat-col');
+            const thEx = document.getElementById('th-ex-kdv');
+            const thKdv = document.getElementById('th-kdv-amt');
+            const btnLabel = document.getElementById('toggle-all-kdv-label');
+            const btnIcon = document.querySelector('#toggle-all-kdv-btn i');
+
+            if (showAllKdvDetails) {
+                thCat.classList.remove('hidden');
+            } else {
+                thCat.classList.add('hidden');
+            }
+
+            if (anyVisible) {
+                thEx.classList.remove('hidden');
+                thKdv.classList.remove('hidden');
+            } else {
+                thEx.classList.add('hidden');
+                thKdv.classList.add('hidden');
+            }
+
+            if (showAllKdvDetails) {
+                btnLabel.innerText = 'KDV & Hariç Fiyatları Gizle';
+                if (btnIcon) btnIcon.className = 'fa-solid fa-eye-slash';
+            } else {
+                btnLabel.innerText = 'KDV & Hariç Fiyatları Göster';
+                if (btnIcon) btnIcon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        function getCategoryDisplayPath(catId) {
             const categories = appData.categories || [];
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return 'Kategorisiz';
+            if (cat.parentId) {
+                const parent = categories.find(c => c.id === cat.parentId);
+                return parent ? `${parent.name} / ${cat.name}` : cat.name;
+            }
+            return cat.name;
+        }
 
-            products.forEach(prod => {
-                const sym = getCurrencySymbol(prod.currency);
-                let optionsHTML = '';
-                categories.forEach(cat => {
-                    if (!cat.parentId) {
-                        const isSelected = prod.categoryId === cat.id ? 'selected' : '';
-                        optionsHTML += `<option value="${cat.id}" ${isSelected}>📁 ${cat.name}</option>`;
-
-                        const subCats = categories.filter(sub => sub.parentId === cat.id);
-                        subCats.forEach(sub => {
-                            const isSubSelected = prod.categoryId === sub.id ? 'selected' : '';
-                            optionsHTML += `<option value="${sub.id}" ${isSubSelected}>&nbsp;&nbsp;&nbsp;&nbsp;↳ ${cat.name} / ${sub.name}</option>`;
-                        });
-                    }
-                });
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-800/40 transition';
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-semibold text-white">${prod.name}</td>
-                    <td class="py-3 px-4 text-center font-bold text-slate-300">${prod.stock} Adet</td>
-                    <td class="py-3 px-4 text-right font-bold text-amber-400">${prod.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ${sym}</td>
-                    <td class="py-3 px-4 text-center">
-                        <select onchange="updateProductCategoryQuick('${prod.id}', this.value)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-amber-400 font-bold focus:outline-none focus:border-sky-500">
-                            ${optionsHTML}
-                        </select>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+        function toggleInlineCategorySelect(prodId) {
+            activeCategoryEditProdId = (activeCategoryEditProdId === prodId) ? null : prodId;
+            renderProducts();
+            if (activeCategoryEditProdId) {
+                setTimeout(() => {
+                    const sel = document.getElementById(`inline-cat-select-${prodId}`);
+                    if (sel) sel.focus();
+                }, 0);
+            }
         }
 
         function updateProductCategoryQuick(prodId, newCatId) {
             const prod = (appData.products || []).find(p => p.id === prodId);
             if (prod) {
                 prod.categoryId = newCatId;
+                activeCategoryEditProdId = null;
                 saveData();
+                renderProducts();
                 showToast(`"${prod.name}" yeni kategorisine taşındı!`);
             }
         }
@@ -1211,6 +1219,7 @@
         // --- HİBRİT NAVİGASYON ---
         function navigateHome() {
             currentCategoryId = null;
+            activeCategoryEditProdId = null;
             document.getElementById('category-detail-view').classList.add('hidden');
             document.getElementById('categories-view').classList.remove('hidden');
             document.getElementById('breadcrumb-nav').classList.add('hidden');
@@ -1223,6 +1232,11 @@
             if (!cat) return;
 
             currentCategoryId = catId;
+            activeCategoryEditProdId = null;
+            showAllKdvDetails = false;
+            expandedKdvProductIds.clear();
+            syncKdvColumnHeaders();
+
             document.getElementById('categories-view').classList.add('hidden');
             document.getElementById('category-detail-view').classList.remove('hidden');
             document.getElementById('product-search').value = '';
@@ -1631,6 +1645,7 @@
                 directPriceInput.disabled = false;
                 buyInput.disabled = true;
                 rateInput.disabled = true;
+                calculateDirectProfit();
             } else {
                 boxAuto.classList.add('border-2', 'border-emerald-500', 'bg-slate-800/90');
                 boxAuto.classList.remove('border', 'border-slate-700', 'bg-slate-800/40', 'opacity-70');
@@ -1645,19 +1660,38 @@
             }
         }
 
+        function updateKdvBadgeUI(isKdvIncluded, badgeId) {
+            const badge = document.getElementById(badgeId);
+            if (!badge) return;
+            if (isKdvIncluded) {
+                badge.innerText = 'KDV Dahil Giriliyor (+%20 Eklenmeyecek)';
+                badge.className = 'px-3 py-1 rounded-lg bg-sky-500/20 text-sky-400 text-xs font-bold border border-sky-500/40';
+            } else {
+                badge.innerText = 'KDV Hariç Giriliyor (+%20 Eklenecek)';
+                badge.className = 'px-3 py-1 rounded-lg bg-amber-500/20 text-amber-400 text-xs font-bold border border-amber-500/30';
+            }
+        }
+
         function calculateDirectProfit() {
             const buyVal = parseFloat(document.getElementById('prod-direct-buy').value) || 0;
             const priceVal = parseFloat(document.getElementById('prod-direct-price').value) || 0;
             const currency = document.getElementById('prod-currency').value;
+            const isKdvInc = document.getElementById('prod-kdv-included').checked;
             const sym = getCurrencySymbol(currency);
             const profitValEl = document.getElementById('add-direct-profit-val');
+            const finalPreviewEl = document.getElementById('add-direct-final-preview');
+
+            updateKdvBadgeUI(isKdvInc, 'add-kdv-status-badge');
+
+            const finalKdvPrice = isKdvInc ? priceVal : (priceVal * 1.20);
+            finalPreviewEl.innerText = `${finalKdvPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}`;
 
             if (buyVal > 0 && priceVal > 0) {
                 const profit = priceVal - buyVal;
                 if (profit >= 0) {
-                    profitValEl.innerHTML = `Bu üründen <span class="text-emerald-400 font-extrabold">+${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}</span> kar ediyorsun`;
+                    profitValEl.innerHTML = `<span class="text-emerald-400 font-extrabold">+${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}</span>`;
                 } else {
-                    profitValEl.innerHTML = `Zarar: <span class="text-rose-400 font-extrabold">${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}</span>`;
+                    profitValEl.innerHTML = `<span class="text-rose-400 font-extrabold">${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}</span>`;
                 }
             } else {
                 profitValEl.innerText = 'Alış girilmedi';
@@ -1668,20 +1702,51 @@
             const buyPrice = parseFloat(document.getElementById('prod-buy-price').value) || 0;
             const profitRate = parseFloat(document.getElementById('prod-profit-rate').value) || 0;
             const currency = document.getElementById('prod-currency').value;
+            const isKdvInc = document.getElementById('prod-kdv-included').checked;
             const sym = getCurrencySymbol(currency);
             
+            updateKdvBadgeUI(isKdvInc, 'add-kdv-status-badge');
+
             const netProfitValEl = document.getElementById('add-net-profit-val');
             const resultEl = document.getElementById('add-auto-result');
 
             if (buyPrice > 0) {
                 const netProfit = buyPrice * (profitRate / 100);
                 const sellPrice = buyPrice + netProfit;
+                const finalDisplayPrice = isKdvInc ? sellPrice : (sellPrice * 1.20);
                 netProfitValEl.innerText = `+${netProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}`;
-                resultEl.innerText = `${sellPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}`;
+                resultEl.innerText = `${finalDisplayPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym} (KDV Dahil)`;
             } else {
                 netProfitValEl.innerText = `0.00 ${sym}`;
                 resultEl.innerText = `0.00 ${sym}`;
             }
+        }
+
+        function onEditKdvCheckboxToggle() {
+            const isNowKdvInc = document.getElementById('edit-prod-kdv-included').checked;
+            const factor = isNowKdvInc ? 1.20 : (1 / 1.20);
+
+            const directPriceEl = document.getElementById('edit-prod-direct-price');
+            const directBuyEl = document.getElementById('edit-prod-direct-buy');
+            const autoBuyEl = document.getElementById('edit-prod-buy');
+
+            const curDirectPrice = parseFloat(directPriceEl.value);
+            if (!isNaN(curDirectPrice) && curDirectPrice > 0) {
+                directPriceEl.value = (curDirectPrice * factor).toFixed(2);
+            }
+
+            const curDirectBuy = parseFloat(directBuyEl.value);
+            if (!isNaN(curDirectBuy) && curDirectBuy > 0) {
+                directBuyEl.value = (curDirectBuy * factor).toFixed(2);
+            }
+
+            const curAutoBuy = parseFloat(autoBuyEl.value);
+            if (!isNaN(curAutoBuy) && curAutoBuy > 0) {
+                autoBuyEl.value = (curAutoBuy * factor).toFixed(2);
+            }
+
+            calculateEditDirectProfit();
+            calculateEditProductSellPrice();
         }
 
         function setEditPriceMode(mode) {
@@ -1702,6 +1767,7 @@
                 directPriceInput.disabled = false;
                 buyInput.disabled = true;
                 rateInput.disabled = true;
+                calculateEditDirectProfit();
             } else {
                 boxAuto.classList.add('border-2', 'border-emerald-500', 'bg-slate-800/90');
                 boxAuto.classList.remove('border', 'border-slate-700', 'bg-slate-800/40', 'opacity-70');
@@ -1720,15 +1786,22 @@
             const buyVal = parseFloat(document.getElementById('edit-prod-direct-buy').value) || 0;
             const priceVal = parseFloat(document.getElementById('edit-prod-direct-price').value) || 0;
             const currency = document.getElementById('edit-prod-currency').value;
+            const isKdvInc = document.getElementById('edit-prod-kdv-included').checked;
             const sym = getCurrencySymbol(currency);
             const profitValEl = document.getElementById('edit-direct-profit-val');
+            const finalPreviewEl = document.getElementById('edit-direct-final-preview');
+
+            updateKdvBadgeUI(isKdvInc, 'edit-kdv-status-badge');
+
+            const finalKdvPrice = isKdvInc ? priceVal : (priceVal * 1.20);
+            finalPreviewEl.innerText = `${finalKdvPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}`;
 
             if (buyVal > 0 && priceVal > 0) {
                 const profit = priceVal - buyVal;
                 if (profit >= 0) {
-                    profitValEl.innerHTML = `Bu üründen <span class="text-emerald-400 font-extrabold">+${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}</span> kar ediyorsun`;
+                    profitValEl.innerHTML = `<span class="text-emerald-400 font-extrabold">+${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}</span>`;
                 } else {
-                    profitValEl.innerHTML = `Zarar: <span class="text-rose-400 font-extrabold">${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}</span>`;
+                    profitValEl.innerHTML = `<span class="text-rose-400 font-extrabold">${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}</span>`;
                 }
             } else {
                 profitValEl.innerText = 'Alış girilmedi';
@@ -1739,7 +1812,10 @@
             const buyPrice = parseFloat(document.getElementById('edit-prod-buy').value) || 0;
             const profitRate = parseFloat(document.getElementById('edit-prod-profit-rate').value) || 0;
             const currency = document.getElementById('edit-prod-currency').value;
+            const isKdvInc = document.getElementById('edit-prod-kdv-included').checked;
             const sym = getCurrencySymbol(currency);
+
+            updateKdvBadgeUI(isKdvInc, 'edit-kdv-status-badge');
 
             const netProfitValEl = document.getElementById('edit-net-profit-val');
             const resultEl = document.getElementById('edit-auto-result');
@@ -1747,8 +1823,9 @@
             if (buyPrice > 0) {
                 const netProfit = buyPrice * (profitRate / 100);
                 const sellPrice = buyPrice + netProfit;
+                const finalDisplayPrice = isKdvInc ? sellPrice : (sellPrice * 1.20);
                 netProfitValEl.innerText = `+${netProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}`;
-                resultEl.innerText = `${sellPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}`;
+                resultEl.innerText = `${finalDisplayPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym} (KDV Dahil)`;
             } else {
                 netProfitValEl.innerText = `0.00 ${sym}`;
                 resultEl.innerText = `0.00 ${sym}`;
@@ -2162,16 +2239,17 @@
             const stock = parseInt(document.getElementById('prod-stock').value);
             const currency = document.getElementById('prod-currency').value;
             const mode = document.querySelector('input[name="add-price-mode"]:checked').value;
+            const isKdvIncluded = document.getElementById('prod-kdv-included').checked;
 
             let buyPrice = 0;
             let profitRate = 0;
-            let price = 0;
+            let rawSellPrice = 0;
             let isAutoCalc = false;
 
             if (mode === 'direct') {
                 buyPrice = parseFloat(document.getElementById('prod-direct-buy').value) || 0;
-                price = parseFloat(document.getElementById('prod-direct-price').value);
-                if (isNaN(price) || price < 0) {
+                rawSellPrice = parseFloat(document.getElementById('prod-direct-price').value);
+                if (isNaN(rawSellPrice) || rawSellPrice < 0) {
                     showToast('Lütfen geçerli bir satış fiyatı girin!', 'error');
                     return;
                 }
@@ -2182,15 +2260,25 @@
                     showToast('Lütfen geçerli bir alış/geliş fiyatı girin!', 'error');
                     return;
                 }
-                price = buyPrice * (1 + profitRate / 100);
+                rawSellPrice = buyPrice * (1 + profitRate / 100);
                 isAutoCalc = true;
             }
+
+            const basePrice = isKdvIncluded ? (rawSellPrice / 1.20) : rawSellPrice;
+            const baseBuyPrice = (isKdvIncluded && buyPrice > 0) ? (buyPrice / 1.20) : buyPrice;
 
             if(!appData.products) appData.products = [];
             appData.products.push({
                 id: 'prod_' + Date.now(),
                 categoryId: currentCategoryId,
-                name, stock, buyPrice, price: parseFloat(price.toFixed(2)), currency, isAutoCalc, profitRate
+                name, 
+                stock, 
+                buyPrice: parseFloat(baseBuyPrice.toFixed(4)), 
+                price: parseFloat(basePrice.toFixed(4)), 
+                currency, 
+                isAutoCalc, 
+                profitRate,
+                isKdvIncluded
             });
 
             saveData();
@@ -2212,6 +2300,7 @@
             const card = document.getElementById('add-product-card');
             if (card.classList.contains('hidden')) {
                 document.querySelector('input[name="add-price-mode"][value="direct"]').checked = true;
+                document.getElementById('prod-kdv-included').checked = false;
                 setAddPriceMode('direct');
                 document.getElementById('prod-direct-buy').value = '';
                 document.getElementById('prod-direct-price').value = '';
@@ -2230,6 +2319,8 @@
             const products = appData.products || [];
             const categories = appData.categories || [];
 
+            syncKdvColumnHeaders();
+
             const subCatIds = categories.filter(c => c.parentId === currentCategoryId).map(c => c.id);
             const validCatIds = [currentCategoryId, ...subCatIds];
 
@@ -2245,11 +2336,14 @@
             }
             emptyMsg.classList.add('hidden');
 
+            const anyKdvVisible = showAllKdvDetails || expandedKdvProductIds.size > 0;
+
             filtered.forEach((prod, index) => {
                 const sym = getCurrencySymbol(prod.currency);
                 const tlPriceBase = calculateTLPrice(prod.price, prod.currency);
                 const kdvTL = tlPriceBase * 0.20;
                 const totalWithKDV = tlPriceBase * 1.20;
+                const rowKdvVisible = showAllKdvDetails || expandedKdvProductIds.has(prod.id);
 
                 const stockBadge = prod.stock > 5 
                     ? `<span class="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 font-bold text-xs">${prod.stock} Adet</span>`
@@ -2257,20 +2351,49 @@
                         ? `<span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 font-bold text-xs">Kritik: ${prod.stock} Adet</span>`
                         : `<span class="px-3 py-1 rounded-full bg-rose-500/15 text-rose-400 font-bold text-xs">Tükendi</span>`;
 
-                // Ürün satırı için kategori seçim menüsü oluştur
-                let categoryOptionsHTML = '';
-                categories.forEach(cat => {
-                    if (!cat.parentId) {
-                        const isSelected = prod.categoryId === cat.id ? 'selected' : '';
-                        categoryOptionsHTML += `<option value="${cat.id}" ${isSelected}>📁 ${cat.name}</option>`;
-                        
-                        const subCats = categories.filter(sub => sub.parentId === cat.id);
-                        subCats.forEach(sub => {
-                            const isSubSelected = prod.categoryId === sub.id ? 'selected' : '';
-                            categoryOptionsHTML += `<option value="${sub.id}" ${isSubSelected}>&nbsp;&nbsp;&nbsp;&nbsp;↳ ${cat.name} / ${sub.name}</option>`;
+                let categoryCellHTML = '';
+                if (showAllKdvDetails) {
+                    if (activeCategoryEditProdId === prod.id) {
+                        let categoryOptionsHTML = '';
+                        categories.forEach(cat => {
+                            if (!cat.parentId) {
+                                const isSelected = prod.categoryId === cat.id ? 'selected' : '';
+                                categoryOptionsHTML += `<option value="${cat.id}" ${isSelected}>📁 ${cat.name}</option>`;
+                                
+                                const subCats = categories.filter(sub => sub.parentId === cat.id);
+                                subCats.forEach(sub => {
+                                    const isSubSelected = prod.categoryId === sub.id ? 'selected' : '';
+                                    categoryOptionsHTML += `<option value="${sub.id}" ${isSubSelected}>&nbsp;&nbsp;&nbsp;&nbsp;↳ ${cat.name} / ${sub.name}</option>`;
+                                });
+                            }
                         });
+                        categoryCellHTML = `
+                            <td class="py-4 px-4 text-center">
+                                <select id="inline-cat-select-${prod.id}" onchange="updateProductCategoryQuick('${prod.id}', this.value)" onblur="activeCategoryEditProdId = null; renderProducts();" class="px-2.5 py-1.5 bg-slate-900 border border-sky-500 rounded-xl text-xs text-amber-400 font-bold focus:outline-none max-w-[210px]">
+                                    ${categoryOptionsHTML}
+                                </select>
+                            </td>
+                        `;
+                    } else {
+                        const catLabel = getCategoryDisplayPath(prod.categoryId);
+                        categoryCellHTML = `
+                            <td class="py-4 px-4 text-center">
+                                <button type="button" onclick="toggleInlineCategorySelect('${prod.id}')" title="Kategoriyi değiştirmek için tıklayın" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/50 text-xs font-semibold text-slate-200 hover:text-amber-400 transition">
+                                    <span>${catLabel}</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-amber-400"></i>
+                                </button>
+                            </td>
+                        `;
                     }
-                });
+                }
+
+                const exKdvCellHTML = anyKdvVisible
+                    ? `<td class="py-4 px-4 text-right font-medium text-slate-200">${rowKdvVisible ? `${prod.price.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${sym}` : '<span class="text-slate-600 text-xs">—</span>'}</td>`
+                    : '';
+
+                const kdvAmtCellHTML = anyKdvVisible
+                    ? `<td class="py-4 px-4 text-right font-semibold text-sky-400">${rowKdvVisible ? `+${kdvTL.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ₺` : '<span class="text-slate-600 text-xs">—</span>'}</td>`
+                    : '';
 
                 const tr = document.createElement('tr');
                 tr.className = 'draggable-row hover:bg-slate-800/40 transition';
@@ -2307,20 +2430,15 @@
                         </div>
                     </td>
                     <td class="py-4 px-4 font-semibold text-white">${prod.name}</td>
-                    <td class="py-4 px-4 text-center">
-                        <select onchange="updateProductCategoryQuick('${prod.id}', this.value)" class="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-amber-400 font-bold focus:outline-none focus:border-sky-500">
-                            ${categoryOptionsHTML}
-                        </select>
-                    </td>
+                    ${categoryCellHTML}
                     <td class="py-4 px-4 text-center">${stockBadge}</td>
-                    <td class="py-4 px-4 text-right font-medium text-slate-200">
-                        ${prod.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ${sym}
-                    </td>
-                    <td class="py-4 px-4 text-right font-semibold text-sky-400">
-                        +${kdvTL.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺
-                    </td>
-                    <td class="py-4 px-4 text-right font-extrabold text-amber-400 text-xl">
-                        ${totalWithKDV.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺
+                    ${exKdvCellHTML}
+                    ${kdvAmtCellHTML}
+                    <td class="py-4 px-4 text-right">
+                        <button type="button" onclick="toggleRowKdvDetail('${prod.id}')" title="KDV Hariç ve KDV (%20) detayını aç/kapat" class="inline-flex items-center justify-end gap-1.5 font-extrabold text-amber-400 hover:text-amber-300 text-xl transition cursor-pointer">
+                            <span>${totalWithKDV.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ₺</span>
+                            <i class="fa-solid ${rowKdvVisible ? 'fa-chevron-up' : 'fa-chevron-down'} text-xs text-sky-400"></i>
+                        </button>
                     </td>
                     <td class="py-4 px-4 text-right">
                         <div class="inline-flex items-center justify-end gap-2">
@@ -2348,14 +2466,22 @@
             const prod = (appData.products || []).find(p => p.id === prodId);
             if (!prod) return;
 
+            const isKdvInc = !!prod.isKdvIncluded;
+            const factor = isKdvInc ? 1.20 : 1;
+
             document.getElementById('edit-prod-id').value = prod.id;
             document.getElementById('edit-prod-name').value = prod.name;
             document.getElementById('edit-prod-stock').value = prod.stock;
             document.getElementById('edit-prod-currency').value = prod.currency || 'TL';
 
-            document.getElementById('edit-prod-direct-buy').value = (prod.buyPrice && prod.buyPrice > 0 && !prod.isAutoCalc) ? prod.buyPrice : '';
-            document.getElementById('edit-prod-direct-price').value = prod.price;
-            document.getElementById('edit-prod-buy').value = (prod.buyPrice && prod.buyPrice > 0) ? prod.buyPrice : '';
+            document.getElementById('edit-prod-kdv-included').checked = isKdvInc;
+
+            const shownPrice = prod.price * factor;
+            const shownBuy = (prod.buyPrice && prod.buyPrice > 0) ? (prod.buyPrice * factor) : 0;
+
+            document.getElementById('edit-prod-direct-buy').value = (shownBuy > 0 && !prod.isAutoCalc) ? shownBuy.toFixed(2) : '';
+            document.getElementById('edit-prod-direct-price').value = shownPrice.toFixed(2);
+            document.getElementById('edit-prod-buy').value = shownBuy > 0 ? shownBuy.toFixed(2) : '';
             document.getElementById('edit-prod-profit-rate').value = prod.profitRate || 35;
 
             if (prod.isAutoCalc && prod.buyPrice > 0) {
@@ -2377,16 +2503,17 @@
             const stock = parseInt(document.getElementById('edit-prod-stock').value);
             const currency = document.getElementById('edit-prod-currency').value;
             const mode = document.querySelector('input[name="edit-price-mode"]:checked').value;
+            const isKdvIncluded = document.getElementById('edit-prod-kdv-included').checked;
 
             let buyPrice = 0;
             let profitRate = 0;
-            let price = 0;
+            let rawSellPrice = 0;
             let isAutoCalc = false;
 
             if (mode === 'direct') {
                 buyPrice = parseFloat(document.getElementById('edit-prod-direct-buy').value) || 0;
-                price = parseFloat(document.getElementById('edit-prod-direct-price').value);
-                if (isNaN(price) || price < 0) {
+                rawSellPrice = parseFloat(document.getElementById('edit-prod-direct-price').value);
+                if (isNaN(rawSellPrice) || rawSellPrice < 0) {
                     showToast('Lütfen geçerli bir satış fiyatı girin!', 'error');
                     return;
                 }
@@ -2397,19 +2524,23 @@
                     showToast('Lütfen geçerli bir alış/geliş fiyatı girin!', 'error');
                     return;
                 }
-                price = buyPrice * (1 + profitRate / 100);
+                rawSellPrice = buyPrice * (1 + profitRate / 100);
                 isAutoCalc = true;
             }
+
+            const basePrice = isKdvIncluded ? (rawSellPrice / 1.20) : rawSellPrice;
+            const baseBuyPrice = (isKdvIncluded && buyPrice > 0) ? (buyPrice / 1.20) : buyPrice;
 
             const prod = (appData.products || []).find(p => p.id === prodId);
             if (prod) {
                 prod.name = name;
                 prod.stock = isNaN(stock) ? 0 : stock;
-                prod.buyPrice = buyPrice;
-                prod.price = parseFloat(price.toFixed(2));
+                prod.buyPrice = parseFloat(baseBuyPrice.toFixed(4));
+                prod.price = parseFloat(basePrice.toFixed(4));
                 prod.currency = currency;
                 prod.isAutoCalc = isAutoCalc;
                 prod.profitRate = profitRate;
+                prod.isKdvIncluded = isKdvIncluded;
 
                 saveData();
                 closeModal('edit-product-modal');
